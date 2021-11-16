@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Flash to JS</title>
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+
+  <body>
+    <h1>Flash to JS</h1>
+    <div class="map-container">
+      <div class="build-container">
+        <div class="sticky">
+          <table>
+            <thead>
+              <th width="45%">Build category / cost items</th>
+              <th width="10%">Type</th>
+              <th width="45%">Map to this item / Account</th>
+            </thead>
+          </table>
+        </div>
+        <div class="items">
+          <table>
+            <tbody id="tree"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="action-buttons">
+        <span
+          ><img src="images/arrow-right.png" alt="add" title="add items"
+        /></span>
+        <span
+          ><img src="images/double-arrow.png" alt="map" title="map items"
+        /></span>
+        <span
+          ><img src="images/stop.png" alt="unmap" title="unmap items"
+        /></span>
+      </div>
+      <div class="account-items">
+        <div class="items">
+          <table>
+            <tbody id="account-items"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </body>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+  <script>
+    let jsonData = [
+      {
+        title: "Category title 1",
+        parentSubcat: [
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub1: [
+              {
+                title: "costitem11",
+              },
+              {
+                title: "costitem12",
+              },
+            ],
+          },
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub2: [
+              {
+                title: "costitem21",
+              },
+              {
+                title: "costitem22",
+              },
+            ],
+          },
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub3: [
+              {
+                title: "costitem3",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        title: "Category title 2",
+        parentSubcat: [
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub21: [
+              {
+                title: "costitem211",
+              },
+              {
+                title: "costitem212",
+              },
+            ],
+          },
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub22: [
+              {
+                title: "costitem221",
+              },
+              {
+                title: "costitem222",
+              },
+            ],
+          },
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub23: [
+              {
+                title: "costitem23",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        title: "Category title 1",
+        parentSubcat: [
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub1: [
+              {
+                title: "costitem11",
+              },
+              {
+                title: "costitem12",
+              },
+            ],
+          },
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub2: [
+              {
+                title: "costitem21",
+              },
+              {
+                title: "costitem22",
+              },
+            ],
+          },
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub3: [
+              {
+                title: "costitem3",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        title: "Category title 2",
+        parentSubcat: [
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub21: [
+              {
+                title: "costitem211",
+              },
+              {
+                title: "costitem212",
+              },
+            ],
+          },
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub22: [
+              {
+                title: "costitem221",
+              },
+              {
+                title: "costitem222",
+              },
+            ],
+          },
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub23: [
+              {
+                title: "costitem23",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        title: "Category title 1",
+        parentSubcat: [
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub1: [
+              {
+                title: "costitem11",
+              },
+              {
+                title: "costitem12",
+              },
+            ],
+          },
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub2: [
+              {
+                title: "costitem21",
+              },
+              {
+                title: "costitem22",
+              },
+            ],
+          },
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub3: [
+              {
+                title: "costitem3",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        title: "Category title 2",
+        parentSubcat: [
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub21: [
+              {
+                title: "costitem211",
+              },
+              {
+                title: "costitem212",
+              },
+            ],
+          },
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub22: [
+              {
+                title: "costitem221",
+              },
+              {
+                title: "costitem222",
+              },
+            ],
+          },
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub23: [
+              {
+                title: "costitem23",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        title: "Category title 1",
+        parentSubcat: [
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub1: [
+              {
+                title: "costitem11",
+              },
+              {
+                title: "costitem12",
+              },
+            ],
+          },
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub2: [
+              {
+                title: "costitem21",
+              },
+              {
+                title: "costitem22",
+              },
+            ],
+          },
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub3: [
+              {
+                title: "costitem3",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        title: "Category title 2",
+        parentSubcat: [
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub21: [
+              {
+                title: "costitem211",
+              },
+              {
+                title: "costitem212",
+              },
+            ],
+          },
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub22: [
+              {
+                title: "costitem221",
+              },
+              {
+                title: "costitem222",
+              },
+            ],
+          },
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub23: [
+              {
+                title: "costitem23",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        title: "Category title 1",
+        parentSubcat: [
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub1: [
+              {
+                title: "costitem11",
+              },
+              {
+                title: "costitem12",
+              },
+            ],
+          },
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub2: [
+              {
+                title: "costitem21",
+              },
+              {
+                title: "costitem22",
+              },
+            ],
+          },
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub3: [
+              {
+                title: "costitem3",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        title: "Category title 2",
+        parentSubcat: [
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub21: [
+              {
+                title: "costitem211",
+              },
+              {
+                title: "costitem212",
+              },
+            ],
+          },
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub22: [
+              {
+                title: "costitem221",
+              },
+              {
+                title: "costitem222",
+              },
+            ],
+          },
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub23: [
+              {
+                title: "costitem23",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        title: "Category title 1",
+        parentSubcat: [
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub1: [
+              {
+                title: "costitem11",
+              },
+              {
+                title: "costitem12",
+              },
+            ],
+          },
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub2: [
+              {
+                title: "costitem21",
+              },
+              {
+                title: "costitem22",
+              },
+            ],
+          },
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub3: [
+              {
+                title: "costitem3",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        title: "Category title 2",
+        parentSubcat: [
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub21: [
+              {
+                title: "costitem211",
+              },
+              {
+                title: "costitem212",
+              },
+            ],
+          },
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub22: [
+              {
+                title: "costitem221",
+              },
+              {
+                title: "costitem222",
+              },
+            ],
+          },
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub23: [
+              {
+                title: "costitem23",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        title: "Category title 1",
+        parentSubcat: [
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub1: [
+              {
+                title: "costitem11",
+              },
+              {
+                title: "costitem12",
+              },
+            ],
+          },
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub2: [
+              {
+                title: "costitem21",
+              },
+              {
+                title: "costitem22",
+              },
+            ],
+          },
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub3: [
+              {
+                title: "costitem3",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        title: "Category title 2",
+        parentSubcat: [
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub21: [
+              {
+                title: "costitem211",
+              },
+              {
+                title: "costitem212",
+              },
+            ],
+          },
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub22: [
+              {
+                title: "costitem221",
+              },
+              {
+                title: "costitem222",
+              },
+            ],
+          },
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub23: [
+              {
+                title: "costitem23",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        title: "Category title 1",
+        parentSubcat: [
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub1: [
+              {
+                title: "costitem11",
+              },
+              {
+                title: "costitem12",
+              },
+            ],
+          },
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub2: [
+              {
+                title: "costitem21",
+              },
+              {
+                title: "costitem22",
+              },
+            ],
+          },
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub3: [
+              {
+                title: "costitem3",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        title: "Category title 2",
+        parentSubcat: [
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub21: [
+              {
+                title: "costitem211",
+              },
+              {
+                title: "costitem212",
+              },
+            ],
+          },
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub22: [
+              {
+                title: "costitem221",
+              },
+              {
+                title: "costitem222",
+              },
+            ],
+          },
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub23: [
+              {
+                title: "costitem23",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        title: "Category title 1",
+        parentSubcat: [
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub1: [
+              {
+                title: "costitem11",
+              },
+              {
+                title: "costitem12",
+              },
+            ],
+          },
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub2: [
+              {
+                title: "costitem21",
+              },
+              {
+                title: "costitem22",
+              },
+            ],
+          },
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub3: [
+              {
+                title: "costitem3",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        title: "Category title 2",
+        parentSubcat: [
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub21: [
+              {
+                title: "costitem211",
+              },
+              {
+                title: "costitem212",
+              },
+            ],
+          },
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub22: [
+              {
+                title: "costitem221",
+              },
+              {
+                title: "costitem222",
+              },
+            ],
+          },
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub23: [
+              {
+                title: "costitem23",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        title: "Category title 1",
+        parentSubcat: [
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub1: [
+              {
+                title: "costitem11",
+              },
+              {
+                title: "costitem12",
+              },
+            ],
+          },
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub2: [
+              {
+                title: "costitem21",
+              },
+              {
+                title: "costitem22",
+              },
+            ],
+          },
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub3: [
+              {
+                title: "costitem3",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        title: "Category title 2",
+        parentSubcat: [
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub21: [
+              {
+                title: "costitem211",
+              },
+              {
+                title: "costitem212",
+              },
+            ],
+          },
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub22: [
+              {
+                title: "costitem221",
+              },
+              {
+                title: "costitem222",
+              },
+            ],
+          },
+          {
+            title: "Sub title",
+            id: "ID value",
+            sub23: [
+              {
+                title: "costitem23",
+              },
+            ],
+          },
+        ],
+      },
+    ];
+
+    const tree = document.getElementById("tree");
+
+    jsonData.forEach((data) => {
+      const liParent = document.createElement(`tr`);
+      liParent.innerHTML = `
+        <td width="45%" class="indent-1" data-title="${data.title}">
+          <span>${data.title}</span>
+        </td>
+        <td width="10%" class="center">Item</td>
+        <td width="45%"></td>`;
+      tree.appendChild(liParent);
+      if (data.parentSubcat !== undefined) {
+        childs(liParent, data);
+      }
+    });
+
+    function childs(liParent, data) {
+      data.parentSubcat.forEach((child) => {
+        const liChild = document.createElement(`tr`);
+        liChild.innerHTML = `
+        <td width="45%" class="indent-2" data-title="${child.title}">
+          <span>${child.title}</span>
+          </td>
+          <td width="10%" class="center">Item</td>
+          <td width="45%"></td>`;
+        tree.appendChild(liChild);
+        if (checkChilds(child) !== undefined) {
+          const checkChildrenIndex = checkChilds(child);
+          const children = child[checkChildrenIndex];
+          children.forEach((child) => {
+            const liChildren = document.createElement(`tr`);
+            liChildren.innerHTML = `
+            <td class="indent-3" data-title="${child.title}">
+              <span>${child.title}</span>
+              </td>
+              <td class="center">Item</td>
+              <td></td>`;
+            tree.appendChild(liChildren);
+          });
+        }
+      });
+    }
+
+    function checkChilds(object) {
+      const keys = Object.keys(object);
+      const children = keys.filter(function (key) {
+        return key.includes("sub");
+      });
+      if (children) {
+        return children[0];
+      }
+    }
+
+    $(function () {
+      let $items = $("tr");
+      let lastChecked = null;
+      let selectedBuildItems = [];
+
+      $("tr").click(function (e) {
+        if (!lastChecked) {
+          lastChecked = this;
+        }
+        if (e.shiftKey) {
+          let start = $items.index(this);
+          let end = $items.index(lastChecked);
+          $items
+            .slice(Math.min(start, end), Math.max(start, end) + 1)
+            .removeClass("active")
+            .addClass("active");
+        } else {
+          $("tr").removeClass("active");
+          $(this).toggleClass("active");
+        }
+
+        selectedBuildItems = [];
+        $("tr").each(function (index, value) {
+          if (
+            $(value).attr("class") === "active" &&
+            $(value).find("td:first").data("title")
+          ) {
+            selectedBuildItems.push($(value).find("td:first").data("title"));
+          }
+        });
+
+        console.log(selectedBuildItems);
+        lastChecked = this;
+        mousedown = false;
+      });
+    });
+  </script>
+</html>
