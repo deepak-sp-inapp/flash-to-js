@@ -821,7 +821,8 @@
           <span>${data.title}</span>
         </td>
         <td width="10%" class="center">Item</td>
-        <td width="45%"></td>`;
+        <td width="45%"></td>
+      `;
       tree.appendChild(liParent);
       if (data.parentSubcat !== undefined) {
         childs(liParent, data);
@@ -832,11 +833,12 @@
       data.parentSubcat.forEach((child) => {
         const liChild = document.createElement(`tr`);
         liChild.innerHTML = `
-        <td width="45%" class="indent-2" data-title="${child.title}">
-          <span>${child.title}</span>
+          <td width="45%" class="indent-2" data-title="${child.title}">
+            <span>${child.title}</span>
           </td>
           <td width="10%" class="center">Item</td>
-          <td width="45%"></td>`;
+          <td width="45%"></td>
+        `;
         tree.appendChild(liChild);
         if (checkChilds(child) !== undefined) {
           const checkChildrenIndex = checkChilds(child);
@@ -844,11 +846,12 @@
           children.forEach((child) => {
             const liChildren = document.createElement(`tr`);
             liChildren.innerHTML = `
-            <td class="indent-3" data-title="${child.title}">
-              <span>${child.title}</span>
+              <td class="indent-3" data-title="${child.title}">
+                <span>${child.title}</span>
               </td>
               <td class="center">Item</td>
-              <td></td>`;
+              <td></td>
+            `;
             tree.appendChild(liChildren);
           });
         }
@@ -874,6 +877,7 @@
         if (!lastChecked) {
           lastChecked = this;
         }
+
         if (e.shiftKey) {
           let start = $items.index(this);
           let end = $items.index(lastChecked);
@@ -881,6 +885,8 @@
             .slice(Math.min(start, end), Math.max(start, end) + 1)
             .removeClass("active")
             .addClass("active");
+        } else if (e.ctrlKey) {
+          $(this).toggleClass("active");
         } else {
           $("tr").removeClass("active");
           $(this).toggleClass("active");
