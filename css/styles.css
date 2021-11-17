@@ -1,5 +1,10 @@
+* {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 9pt;
+}
+
 .map-container {
-  width: 967px;
+  width: 900px;
   height: 530px;
   background: rgb(235, 234, 234);
   padding: 10px;
@@ -8,8 +13,14 @@
   align-content: center;
 }
 
-.build-container {
+.build-container,
+#tree {
   width: 600px;
+  height: 500px;
+}
+
+.quick-book {
+  width: 230px;
   height: 500px;
 }
 
@@ -26,6 +37,11 @@ table {
   width: 100%;
   border-collapse: collapse;
   background: rgb(235, 234, 234);
+}
+
+table td:nth-child(2) {
+  border-left: 2px solid #ebeaea;
+  border-right: 2px solid #ebeaea;
 }
 
 .center {
@@ -47,6 +63,8 @@ td {
   height: 500px;
   overflow-y: auto;
   overflow-x: hidden;
+  background-color: #fff;
+  border: 1px solid #808080;
 }
 .items > table > thead {
   visibility: collapse;
