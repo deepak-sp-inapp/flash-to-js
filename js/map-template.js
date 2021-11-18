@@ -205,8 +205,8 @@ var mappedData = [
 var indent = 1;
 
 $(function () {
-  startBuildCategory(jsonData, "tree");
-  startBuildQuickBook(jsonData, "account-items");
+  startBuildCategory(jsonData);
+  startBuildQuickBook(jsonData);
   startBuildMapped(mappedData);
 
   var $items = $("#tree tr");
@@ -270,8 +270,9 @@ function checkChilds(object) {
   }
 }
 
-function startBuildCategory(jsonData, target = "tree") {
-  var element = document.getElementById(target);
+function startBuildCategory() {
+  var jsonData = arguments[0];
+  var element = document.getElementById("tree");
   jsonData.forEach(function (data) {
     var liParent = document.createElement("tr");
     liParent.innerHTML =
@@ -312,8 +313,9 @@ function selectedCategoryItems() {
   return selectedItems;
 }
 
-function startBuildQuickBook(jsonData, target = "account-items") {
-  var element = document.getElementById(target);
+function startBuildQuickBook() {
+  var jsonData = arguments[0];
+  var element = document.getElementById("account-items");
   jsonData.forEach(function (data) {
     var liParent = document.createElement("tr");
     liParent.innerHTML =
@@ -350,7 +352,8 @@ function selectedQuickBookItems() {
   return selectedItems;
 }
 
-function startBuildMapped(jsonData) {
+function startBuildMapped() {
+  var jsonData = arguments[0];
   jsonData.forEach(function (data) {
     $("#" + data.id).attr("data-id", data.id);
     $("#" + data.id).html("<span>" + data.title + "</span>");

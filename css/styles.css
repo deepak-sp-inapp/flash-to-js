@@ -26,7 +26,7 @@
   display: flex;
   flex-direction: column;
   align-content: center;
-  justify-content: space-evenly;
+  justify-content: space-around;
   align-items: center;
   width: 80px;
 }
@@ -45,7 +45,10 @@ table td:nth-child(2) {
   border-right: 2px solid #ebeaea;
 }
 
-table th, table td { overflow: hidden; }
+table th,
+table td {
+  overflow: hidden;
+}
 
 .center {
   text-align: center;
@@ -74,13 +77,13 @@ td {
 }
 
 .indent-1 {
-  padding-inline-start: 25px;
+  padding-left: 25px;
 }
 .indent-2 {
-  padding-inline-start: 50px;
+  padding-left: 50px;
 }
 .indent-3 {
-  padding-inline-start: 75px;
+  padding-left: 75px;
 }
 
 td,
