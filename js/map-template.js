@@ -202,191 +202,12 @@ var mappedData = [
   },
 ];
 
-var buildCategory = {
-  target: "",
-  indent: 1,
-  start: function start(jsonData, target = "") {
-    var _this = this;
-    _this.target =
-      target === "" ? _this.target : document.getElementById(target);
-    jsonData.forEach(function (data) {
-      var liParent = document.createElement("tr");
-      liParent.innerHTML =
-        '<td width="45%" class="indent-' +
-        _this.indent +
-        '" data-id="' +
-        data.id +
-        '" data-title="' +
-        data.title +
-        '">  <span>' +
-        data.title +
-        '</span></td><td width="10%" class="center">Item</td><td class="indent-' +
-        _this.indent +
-        '" width="45%" id="' +
-        data.id +
-        '"></td>';
-      _this.target.appendChild(liParent);
-      if (_this.checkChilds(data) !== undefined) {
-        _this.indent = _this.indent + 1;
-        var checkChildIndex = _this.checkChilds(data);
-        var children = data[checkChildIndex];
-        _this.start(children);
-      }
-    });
-    _this.indent = 1;
-  },
-  checkChilds: function checkChilds(object) {
-    var keys = Object.keys(object);
-    var children = keys.filter(function (key) {
-      return object[key].constructor === Array;
-    });
-    if (children) {
-      return children[0];
-    }
-  },
-  selectedItems: function selectedItems() {
-    var selectedItems = [];
-    $("#tree tr").each(function (index, value) {
-      if (
-        $(value).attr("class") === "active" &&
-        $(value).find("td:first").data("id")
-      ) {
-        selectedItems.push($(value).find("td:first").data("id"));
-      }
-    });
-    return selectedItems;
-  },
-};
-
-var mapWithCategory = {
-  tree: document.getElementById("tree"),
-  start: function start(mappedData) {
-    var _this = this;
-    mappedData.forEach(function (data) {
-      $("#" + data.id).attr("data-id", data.id);
-      $("#" + data.id).html("<span>" + data.title + "</span>");
-      if (data.parentSubcat !== undefined) {
-        _this.childs(data);
-      }
-    });
-  },
-  childs: function childs(data) {
-    var _this2 = this;
-    data.parentSubcat.forEach(function (child) {
-      $("#" + child.id).attr("data-id", child.id);
-      $("#" + child.id).html("<span>" + child.title + "</span>");
-      if (_this2.checkChilds(child) !== undefined) {
-        var checkChildrenIndex = _this2.checkChilds(child);
-        var children = child[checkChildrenIndex];
-        children.forEach(function (child) {
-          $("#" + child.id).attr("data-id", child.id);
-          $("#" + child.id).html("<span>" + child.title + "</span>");
-        });
-      }
-    });
-  },
-  checkChilds: function checkChilds(object) {
-    var keys = Object.keys(object);
-    var children = keys.filter(function (key) {
-      return key.includes("sub");
-    });
-    if (children) {
-      return children[0];
-    }
-  },
-  selectedItems: function selectedItems() {
-    var selectedItems = [];
-    $("#tree tr").each(function (index, value) {
-      if (
-        $(value).attr("class") === "active" &&
-        $(value).children("td:eq(2)").attr("data-id")
-      ) {
-        selectedItems.push($(value).children("td:eq(2)").attr("data-id"));
-      }
-    });
-    return selectedItems;
-  },
-};
-
-var quickBookItems = {
-  target: "",
-  indent: 1,
-  start: function start(jsonData, target = "") {
-    var _this = this;
-    _this.target =
-      target === "" ? _this.target : document.getElementById(target);
-    jsonData.forEach(function (data) {
-      var liParent = document.createElement("tr");
-      liParent.innerHTML =
-        '<td width="45%" class="indent-' +
-        _this.indent +
-        '" data-id="' +
-        data.id +
-        '" data-title="' +
-        data.title +
-        '">  <span>' +
-        data.title +
-        "</span></td>";
-      _this.target.appendChild(liParent);
-      if (_this.checkChilds(data) !== undefined) {
-        _this.indent = _this.indent + 1;
-        var checkChildIndex = _this.checkChilds(data);
-        var children = data[checkChildIndex];
-        _this.start(children);
-      }
-    });
-    _this.indent = 1;
-  },
-  checkChilds: function checkChilds(object) {
-    var keys = Object.keys(object);
-    var children = keys.filter(function (key) {
-      return object[key].constructor === Array;
-    });
-    if (children) {
-      return children[0];
-    }
-  },
-  selectedItems: function selectedItems() {
-    var selectedItems = [];
-    $("#account-items tr").each(function (index, value) {
-      if (
-        $(value).attr("class") === "active" &&
-        $(value).find("td:first").data("id")
-      ) {
-        selectedItems.push($(value).find("td:first").data("id"));
-      }
-    });
-    return selectedItems;
-  },
-};
-
-var xmlHttpRequest = {
-  getItems: function () {
-    return jsonData;
-    var request = new XMLHttpRequest();
-    var job_id = "";
-    request.onreadystatechange = function () {
-      if (request.readyState == 4 && request.status == 200) {
-        console.log(request.status);
-      }
-    };
-    request.open(
-      "GET",
-      "https://dev-testd.buildstar.com/app/sync/category_map_rpc.cfm?req=getItems" +
-        "?job_id=" +
-        1,
-      true
-    );
-    request.send(null);
-  },
-  getAccounts: function () {},
-  getCategories: function () {},
-};
+var indent = 1;
 
 $(function () {
-  buildCategory.start(jsonData, "tree");
-  quickBookItems.start(jsonData, "account-items");
-  mapWithCategory.start(mappedData);
+  startBuildCategory(jsonData, "tree");
+  startBuildQuickBook(jsonData, "account-items");
+  startBuildMapped(mappedData);
 
   var $items = $("#tree tr");
   var $accountItems = $("#account-items tr");
@@ -433,10 +254,146 @@ $(function () {
   });
 
   $("#add-items, #map-items, #unmap-items").click(function (e) {
-    console.log("category items", buildCategory.selectedItems());
-    console.log("quickbook items", quickBookItems.selectedItems());
-    console.log("mapped items", mapWithCategory.selectedItems());
+    console.log("category items", selectedCategoryItems());
+    console.log("quickbook items", selectedQuickBookItems());
+    console.log("mapped items", selectedMappedItems());
   });
-
-  // console.log(xmlHttpRequest.getItems());
 });
+
+function checkChilds(object) {
+  var keys = Object.keys(object);
+  var children = keys.filter(function (key) {
+    return object[key].constructor === Array;
+  });
+  if (children) {
+    return children[0];
+  }
+}
+
+function startBuildCategory(jsonData, target = "tree") {
+  var element = document.getElementById(target);
+  jsonData.forEach(function (data) {
+    var liParent = document.createElement("tr");
+    liParent.innerHTML =
+      '<td width="45%" class="indent-' +
+      indent +
+      '" data-id="' +
+      data.id +
+      '" data-title="' +
+      data.title +
+      '">  <span>' +
+      data.title +
+      '</span></td><td width="10%" class="center">Item</td><td class="indent-' +
+      indent +
+      '" width="45%" id="' +
+      data.id +
+      '"></td>';
+    element.appendChild(liParent);
+    if (checkChilds(data) !== undefined) {
+      indent = indent + 1;
+      var checkChildIndex = checkChilds(data);
+      var children = data[checkChildIndex];
+      startBuildCategory(children);
+    }
+  });
+  indent = 1;
+}
+
+function selectedCategoryItems() {
+  var selectedItems = [];
+  $("#tree tr").each(function (index, value) {
+    if (
+      $(value).attr("class") === "active" &&
+      $(value).find("td:first").data("id")
+    ) {
+      selectedItems.push($(value).find("td:first").data("id"));
+    }
+  });
+  return selectedItems;
+}
+
+function startBuildQuickBook(jsonData, target = "account-items") {
+  var element = document.getElementById(target);
+  jsonData.forEach(function (data) {
+    var liParent = document.createElement("tr");
+    liParent.innerHTML =
+      '<td width="45%" class="indent-' +
+      indent +
+      '" data-id="' +
+      data.id +
+      '" data-title="' +
+      data.title +
+      '">  <span>' +
+      data.title +
+      "</span></td>";
+    element.appendChild(liParent);
+    if (checkChilds(data) !== undefined) {
+      indent = indent + 1;
+      var checkChildIndex = checkChilds(data);
+      var children = data[checkChildIndex];
+      startBuildQuickBook(children);
+    }
+  });
+  indent = 1;
+}
+
+function selectedQuickBookItems() {
+  var selectedItems = [];
+  $("#account-items tr").each(function (index, value) {
+    if (
+      $(value).attr("class") === "active" &&
+      $(value).find("td:first").data("id")
+    ) {
+      selectedItems.push($(value).find("td:first").data("id"));
+    }
+  });
+  return selectedItems;
+}
+
+function startBuildMapped(jsonData) {
+  jsonData.forEach(function (data) {
+    $("#" + data.id).attr("data-id", data.id);
+    $("#" + data.id).html("<span>" + data.title + "</span>");
+    if (checkChilds(data) !== undefined) {
+      indent = indent + 1;
+      var checkChildIndex = checkChilds(data);
+      var children = data[checkChildIndex];
+      startBuildMapped(children);
+    }
+  });
+  indent = 1;
+}
+
+function selectedMappedItems() {
+  var selectedItems = [];
+  $("#tree tr").each(function (index, value) {
+    if (
+      $(value).attr("class") === "active" &&
+      $(value).children("td:eq(2)").attr("data-id")
+    ) {
+      selectedItems.push($(value).children("td:eq(2)").attr("data-id"));
+    }
+  });
+  return selectedItems;
+}
+
+function getItems() {
+  return jsonData;
+  var request = new XMLHttpRequest();
+  var job_id = "";
+  request.onreadystatechange = function () {
+    if (request.readyState == 4 && request.status == 200) {
+      console.log(request.status);
+    }
+  };
+  request.open(
+    "GET",
+    "https://dev-testd.buildstar.com/app/sync/category_map_rpc.cfm?req=getItems" +
+      "?job_id=" +
+      1,
+    true
+  );
+  request.send(null);
+}
+function getAccounts() {}
+function getCategories() {}
