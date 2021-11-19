@@ -209,48 +209,48 @@ $(function () {
   startBuildQuickBook(jsonData);
   startBuildMapped(mappedData);
 
-  var $items = $("#tree tr");
-  var $accountItems = $("#account-items tr");
   var lastChecked = null;
+  var dragging = false;
 
-  $items.click(function (e) {
-    if (!lastChecked) {
-      lastChecked = this;
+  $("#tree, #account-items").on("mousedown", function (e) {
+    var x = e.screenX;
+    var y = e.screenY;
+    $("#tree, #account-items").on("mousemove", function (e) {
+      if (Math.abs(x - e.screenX) > 5 || Math.abs(y - e.screenY) > 5) {
+        dragging = true;
+        e.target.parentElement.classList.add("active");
+      }
+    });
+  });
+  $("#tree, #account-items").on("mouseup", function (e) {
+    $("#tree, #account-items").off("mousemove");
+    if (dragging) {
+      e.target.parentElement.classList.add("active");
     }
-    if (e.shiftKey) {
-      var start = $items.index(this);
-      var end = $items.index(lastChecked);
-      $items
-        .slice(Math.min(start, end), Math.max(start, end) + 1)
-        .removeClass("active")
-        .addClass("active");
-    } else if (e.ctrlKey) {
-      $(this).toggleClass("active");
-    } else {
-      $items.removeClass("active");
-      $(this).toggleClass("active");
-    }
-    lastChecked = this;
+    dragging = false;
   });
 
-  $accountItems.click(function (e) {
-    if (!lastChecked) {
+  [$("#tree tr"), $("#account-items tr")].forEach(function (currentElement) {
+    var $element = currentElement;
+    $element.click(function (e) {
+      if (!lastChecked) {
+        lastChecked = this;
+      }
+      if (e.shiftKey) {
+        var start = $element.index(this);
+        var end = $element.index(lastChecked);
+        $element
+          .slice(Math.min(start, end), Math.max(start, end) + 1)
+          .removeClass("active")
+          .addClass("active");
+      } else if (e.ctrlKey) {
+        $(this).toggleClass("active");
+      } else {
+        $element.removeClass("active");
+        $(this).toggleClass("active");
+      }
       lastChecked = this;
-    }
-    if (e.shiftKey) {
-      var start = $accountItems.index(this);
-      var end = $accountItems.index(lastChecked);
-      $accountItems
-        .slice(Math.min(start, end), Math.max(start, end) + 1)
-        .removeClass("active")
-        .addClass("active");
-    } else if (e.ctrlKey) {
-      $(this).toggleClass("active");
-    } else {
-      $accountItems.removeClass("active");
-      $(this).toggleClass("active");
-    }
-    lastChecked = this;
+    });
   });
 
   $("#add-items, #map-items, #unmap-items").click(function (e) {
@@ -271,6 +271,7 @@ function checkChilds(object) {
 }
 
 function startBuildCategory() {
+  if (!arguments[0] || !Array.isArray(arguments[0])) return;
   var jsonData = arguments[0];
   var element = document.getElementById("tree");
   jsonData.forEach(function (data) {
@@ -314,6 +315,7 @@ function selectedCategoryItems() {
 }
 
 function startBuildQuickBook() {
+  if (!arguments[0] || !Array.isArray(arguments[0])) return;
   var jsonData = arguments[0];
   var element = document.getElementById("account-items");
   jsonData.forEach(function (data) {
@@ -353,6 +355,7 @@ function selectedQuickBookItems() {
 }
 
 function startBuildMapped() {
+  if (!arguments[0] || !Array.isArray(arguments[0])) return;
   var jsonData = arguments[0];
   jsonData.forEach(function (data) {
     $("#" + data.id).attr("data-id", data.id);
@@ -381,22 +384,42 @@ function selectedMappedItems() {
 }
 
 function getItems() {
-  return jsonData;
-  var request = new XMLHttpRequest();
+  var http = new XMLHttphttp();
   var job_id = "";
-  request.onreadystatechange = function () {
-    if (request.readyState == 4 && request.status == 200) {
-      console.log(request.status);
+  http.onreadystatechange = function () {
+    if (http.readyState === 4 && http.status === 200) {
+      console.log(http.status, http.response);
     }
   };
-  request.open(
+  http.open(
     "GET",
     "https://dev-testd.buildstar.com/app/sync/category_map_rpc.cfm?req=getItems" +
       "?job_id=" +
       1,
     true
   );
-  request.send(null);
+  http.send(null);
 }
+
 function getAccounts() {}
+
 function getCategories() {}
+
+function sendMappedItems() {
+  if (!arguments[0] || !Array.isArray(arguments[0])) return;
+  var mappedItems = arguments[0];
+  var request = new XMLHttpRequest();
+  mappedItems.forEach(function (item) {
+    var url =
+      "https://dev-testd.buildstar.com/app/sync/category_map_rpc.cfm?req" +
+      item;
+    request.open("GET", url);
+    request.send();
+
+    // not handling readyState, since we'll be following synchronous requests
+    if (request.status === 200) {
+      var data = JSON.parse(request.responseText);
+      console.log("response => " + data);
+    }
+  });
+}

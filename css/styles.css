@@ -92,9 +92,10 @@ td,
 }
 
 td > span {
-  margin: 5px 0 5px 0;
   padding: 2px;
   white-space: nowrap;
+  pointer-events: none;
+  display: inline-block;
 }
 
 td > span:hover,
