@@ -298,7 +298,7 @@ function startBuildCategory() {
       startBuildCategory(children);
     }
   });
-  indent = 1;
+  indent = indent - 1;
 }
 
 function selectedCategoryItems() {
