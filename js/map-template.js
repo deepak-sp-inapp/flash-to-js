@@ -12,6 +12,16 @@ var jsonData = [
           {
             id: "01-100-10",
             title: "1 Brush",
+            sub1: [
+              {
+                id: "01-100-10",
+                title: "1 Brush",
+              },
+              {
+                id: "01-100-20",
+                title: "2 Oil Paint",
+              },
+            ],
           },
           {
             id: "01-100-20",
@@ -253,10 +263,36 @@ $(function () {
     });
   });
 
-  $("#add-items, #map-items, #unmap-items").click(function (e) {
+  $("#add-items, #map-items").click(function (e) {
     console.log("category items", selectedCategoryItems());
     console.log("quickbook items", selectedQuickBookItems());
     console.log("mapped items", selectedMappedItems());
+  });
+
+  $("#unmap-items").click(function (e) {
+    var mappedItems = selectedMappedItems();
+    if (mappedItems.length > 0) {
+      var header = "Remove mapping(s) for ?";
+      var content = "<table><tbody>";
+      $("#tree tr").each(function (index, value) {
+        if (
+          $(value).attr("class") === "active" &&
+          $(value).children("td:eq(2)").attr("data-id")
+        ) {
+          content +=
+            "<tr>" + $(value).children("td:eq(2)").get(0).outerHTML + "</tr>";
+        }
+      });
+      content += "</tbody></table>";
+      content += '<button class="modal-toggle">Ok</button>';
+      $(".modal-heading").html(header);
+      $(".modal-content").html(content);
+      $(".modal").toggleClass("is-visible");
+    }
+  });
+
+  $(".modal-toggle").click(function (e) {
+    $(".modal").toggleClass("is-visible");
   });
 });
 
@@ -266,7 +302,7 @@ function checkChilds(object) {
     return object[key].constructor === Array;
   });
   if (children) {
-    return children[0];
+    return children;
   }
 }
 
@@ -277,25 +313,27 @@ function startBuildCategory() {
   jsonData.forEach(function (data) {
     var liParent = document.createElement("tr");
     liParent.innerHTML =
-      '<td width="45%" class="indent-' +
-      indent +
-      '" data-id="' +
+      '<td width="45%" style="padding-left: ' +
+      indent * 25 +
+      'px" data-id="' +
       data.id +
       '" data-title="' +
       data.title +
       '">  <span>' +
       data.title +
-      '</span></td><td width="10%" class="center">Item</td><td class="indent-' +
-      indent +
-      '" width="45%" id="' +
+      '</span></td><td width="10%" class="center">Item</td><td style="padding-left: ' +
+      indent * 25 +
+      'px" width="45%" id="' +
       data.id +
       '"></td>';
     element.appendChild(liParent);
-    if (checkChilds(data) !== undefined) {
+    if (checkChilds(data) !== undefined && checkChilds(data).length > 0) {
       indent = indent + 1;
       var checkChildIndex = checkChilds(data);
-      var children = data[checkChildIndex];
-      startBuildCategory(children);
+      checkChildIndex.forEach(function (index) {
+        var children = data[index];
+        startBuildCategory(children);
+      });
     }
   });
   indent = indent - 1;
@@ -321,9 +359,9 @@ function startBuildQuickBook() {
   jsonData.forEach(function (data) {
     var liParent = document.createElement("tr");
     liParent.innerHTML =
-      '<td width="45%" class="indent-' +
-      indent +
-      '" data-id="' +
+      '<td width="45%" style="padding-left: ' +
+      indent * 25 +
+      'px" data-id="' +
       data.id +
       '" data-title="' +
       data.title +
@@ -331,14 +369,16 @@ function startBuildQuickBook() {
       data.title +
       "</span></td>";
     element.appendChild(liParent);
-    if (checkChilds(data) !== undefined) {
+    if (checkChilds(data) !== undefined && checkChilds(data).length > 0) {
       indent = indent + 1;
       var checkChildIndex = checkChilds(data);
-      var children = data[checkChildIndex];
-      startBuildQuickBook(children);
+      checkChildIndex.forEach(function (index) {
+        var children = data[index];
+        startBuildQuickBook(children);
+      });
     }
   });
-  indent = 1;
+  indent = indent - 1;
 }
 
 function selectedQuickBookItems() {
