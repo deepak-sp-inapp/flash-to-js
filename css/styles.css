@@ -189,3 +189,7 @@ td > span:hover,
 .active > td {
   background-color: lightgray;
 }
+
+.action-buttons > span:hover {
+  transform: scale(1.03);
+}

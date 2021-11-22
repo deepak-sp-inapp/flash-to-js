@@ -215,6 +215,10 @@ var mappedData = [
 var indent = 1;
 
 $(function () {
+  $("#add-items").css("visibility", "hidden");
+  $("#map-items").css("visibility", "hidden");
+  $("#unmap-items").css("visibility", "hidden");
+
   startBuildCategory(jsonData);
   startBuildQuickBook(jsonData);
   startBuildMapped(mappedData);
@@ -231,6 +235,7 @@ $(function () {
         e.target.parentElement.classList.add("active");
       }
     });
+    showActionButtons();
   });
   $("#tree, #account-items").on("mouseup", function (e) {
     $("#tree, #account-items").off("mousemove");
@@ -238,8 +243,8 @@ $(function () {
       e.target.parentElement.classList.add("active");
     }
     dragging = false;
+    showActionButtons();
   });
-
   [$("#tree tr"), $("#account-items tr")].forEach(function (currentElement) {
     var $element = currentElement;
     $element.click(function (e) {
@@ -260,6 +265,7 @@ $(function () {
         $(this).toggleClass("active");
       }
       lastChecked = this;
+      showActionButtons();
     });
   });
 
@@ -284,7 +290,8 @@ $(function () {
         }
       });
       content += "</tbody></table>";
-      content += '<button class="modal-toggle">Ok</button>';
+      content +=
+        '<button class="modal-toggle" onclick="removeMappedItems()">Ok</button>';
       $(".modal-heading").html(header);
       $(".modal-content").html(content);
       $(".modal").toggleClass("is-visible");
@@ -295,6 +302,33 @@ $(function () {
     $(".modal").toggleClass("is-visible");
   });
 });
+
+function showActionButtons() {
+  if ($("#tree tr").hasClass("active")) {
+    $("#add-items").css("visibility", "visible");
+  }
+  if (
+    $("#tree tr").hasClass("active") &&
+    $("#account-items tr").hasClass("active")
+  ) {
+    $("#map-items").css("visibility", "visible");
+  }
+
+  var showCount = 0;
+  $("#tree tr").each(function (index, value) {
+    if (
+      $(value).attr("class") === "active" &&
+      $(value).children("td:eq(2)").attr("data-id")
+    ) {
+      showCount = showCount + 1;
+    }
+  });
+  if (showCount > 0) {
+    $("#unmap-items").css("visibility", "visible");
+  } else {
+    $("#unmap-items").css("visibility", "hidden");
+  }
+}
 
 function checkChilds(object) {
   var keys = Object.keys(object);
@@ -463,3 +497,22 @@ function sendMappedItems() {
     }
   });
 }
+
+function removeMappedItems() {
+  var mappedItems = selectedMappedItems();
+  if (mappedItems && mappedItems.length > 0) {
+    $("#tree tr").each(function (index, value) {
+      var currentId = $(value).children("td:eq(2)").attr("data-id");
+      if (
+        $(value).attr("class") === "active" &&
+        currentId &&
+        mappedItems.indexOf(currentId.toString()) > -1
+      ) {
+        $(value).children("td:eq(2)").get(0).innerHTML = "";
+      }
+    });
+  }
+  $(".modal").toggleClass("is-visible");
+}
+
+function clearAllSelected() {}
