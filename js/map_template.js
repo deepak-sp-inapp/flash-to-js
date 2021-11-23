@@ -235,7 +235,8 @@ function getCategories() {
     if (xhr.readyState == 4 && xhr.status == 200) {
       if (xhr.response) {
         var response = xhr.response;
-        console.log("response", response, response.data, typeof(response.data));
+        response =
+          typeof response == "object" ? response : JSON.parse(response);
         if (response.data) {
           startBuildCategory(response.data);
         } else {
