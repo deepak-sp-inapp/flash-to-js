@@ -89,24 +89,18 @@ $(function () {
   });
 });
 
-function checkChilds(object) {
-  var keys = Object.keys(object);
-  var children = keys.filter(function (key) {
-    return object[key].constructor === Array;
-  });
-  if (children) {
-    return children;
-  }
-}
-
-function startBuildCategory() {
+async function startBuildCategory() {
   if (!arguments[0]) return;
 
   var job_id = arguments[0];
   var element = document.getElementById("tree");
-  var jsonData = getCategories(job_id);
 
-  if (!jsonData) return;
+  try {
+    var jsonData = await getCategories(job_id);
+  } catch (error) {
+    console.log(error);
+    return;
+  }
 
   jsonData.forEach(function (data) {
     if (!data.cat_name && !data.cat_nbr) return;
@@ -243,21 +237,28 @@ function getAccounts() {
 function getCategories() {
   if (!arguments[0]) return;
   var job_id = arguments[0];
-  var xhr = new XMLHttpRequest();
-  xhr.onreadystatechange = function () {
-    if (xhr.readyState == 4 && xhr.status == 200) {
-      if (xhr.response && xhr.response.error_code == 0) {
-        return xhr.response.data;
+
+  return new Promise(function (resolve, reject) {
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState == 4 && xhr.status == 200) {
+        if (xhr.response && xhr.response.error_code == 0) {
+          resolve(xhr.response.data);
+        } else {
+          reject("Error fetching remote data");
+        }
+      } else {
+        reject("Error fetching remote data");
       }
-    }
-  };
-  xhr.open(
-    "GET",
-    "https://dev-testd.buildstar.com/app/sync/category_map_rpc.cfm?req=getCategories&job_id=" +
-      job_id,
-    true
-  );
-  xhr.send(null);
+    };
+    xhr.open(
+      "GET",
+      "https://dev-testd.buildstar.com/app/sync/category_map_rpc.cfm?req=getCategories&job_id=" +
+        job_id,
+      true
+    );
+    xhr.send(null);
+  });
 }
 
 function getItems() {
