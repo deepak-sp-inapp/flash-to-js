@@ -95,7 +95,7 @@ function startBuildCategory() {
   var element = document.getElementById("tree");
 
   jsonData.forEach(function (data) {
-    if (!data.cat_name && !data.cat_nbr) return;
+    if (!data.cat_desc && !data.cat_nbr) return;
     var liParent = document.createElement("tr");
     liParent.innerHTML =
       '<td width="45%" style="padding-left: ' +
@@ -103,9 +103,9 @@ function startBuildCategory() {
       'px" data-id="' +
       data.cat_nbr +
       '" data-title="' +
-      data.cat_name +
+      data.cat_desc +
       '">  <span>' +
-      data.cat_name +
+      data.cat_desc +
       '</span></td><td width="10%" class="center">Item</td><td style="padding-left: ' +
       data.cat_level * 15 +
       'px" width="45%" id="' +
@@ -133,7 +133,7 @@ function startBuildQuickBook() {
   var jsonData = arguments[0];
   var element = document.getElementById("account-items");
   jsonData.forEach(function (data) {
-    if (!data.cat_name && !data.cat_nbr) return;
+    if (!data.cat_desc && !data.cat_nbr) return;
     var liParent = document.createElement("tr");
     liParent.innerHTML =
       '<td width="45%" style="padding-left: ' +
@@ -141,9 +141,9 @@ function startBuildQuickBook() {
       'px" data-id="' +
       data.cat_nbr +
       '" data-title="' +
-      data.cat_name +
+      data.cat_desc +
       '">  <span>' +
-      data.cat_name +
+      data.cat_desc +
       "</span></td>";
     element.appendChild(liParent);
   });
@@ -233,10 +233,11 @@ function getCategories() {
   var xhr = new XMLHttpRequest();
   xhr.onreadystatechange = function () {
     if (xhr.readyState == 4 && xhr.status == 200) {
-      if (xhr.response && xhr.response.error_code == 0) {
-        console.log('response', xhr.response.data);
-        if (xhr.response.data) {
-          startBuildCategory(xhr.response.data);
+      if (xhr.response) {
+        var response = xhr.response;
+        console.log("response", response, response.data, typeof(response.data));
+        if (response.data) {
+          startBuildCategory(response.data);
         } else {
           console.log("No data");
         }
