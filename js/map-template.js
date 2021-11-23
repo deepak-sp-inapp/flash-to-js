@@ -1,227 +1,13 @@
 "use strict";
 
-var jsonData = [
-  {
-    id: "01-1",
-    title: "01-1 Planning & Design",
-    parentSubcat: [
-      {
-        title: "01-100 Planning & Design LUMP SUM",
-        id: "01-100",
-        sub1: [
-          {
-            id: "01-100-10",
-            title: "1 Brush",
-            sub1: [
-              {
-                id: "01-100-10",
-                title: "1 Brush",
-              },
-              {
-                id: "01-100-20",
-                title: "2 Oil Paint",
-              },
-            ],
-          },
-          {
-            id: "01-100-20",
-            title: "2 Oil Paint",
-          },
-        ],
-      },
-      {
-        title: "01-110 Architect",
-        id: "01-110",
-        sub2: [
-          {
-            id: "01-110-00",
-            title: "01-110-10 Architecture Lump Sum ",
-          },
-          {
-            id: "01-110-01",
-            title: "01-110-20 Architect",
-          },
-        ],
-      },
-      {
-        title: "01-111 Plans / Blueprints",
-        id: "01-111",
-        sub3: [
-          {
-            id: "01-111-10",
-            title: "01-111-10 Plans/Blueprints",
-          },
-        ],
-      },
-    ],
-  },
-  {
-    id: "02-",
-    title: "02- Permits, Fees & Bonds",
-    parentSubcat: [
-      {
-        title: "02-00 Permits, Fees & Bonds - LUMP SUM",
-        id: "02-00",
-        sub21: [
-          {
-            id: "02-00-00",
-            title: "02-00-00 Planning General",
-          },
-          {
-            id: "02-00-11",
-            title: "02-00-11 Bond",
-          },
-        ],
-      },
-      {
-        title: "02-10 Permits",
-        id: "02-10",
-        sub22: [
-          {
-            id: "02-10-10",
-            title: "02-10-10 Building Permit",
-          },
-          {
-            id: "02-10-20",
-            title: "02-10-20 Building Permit - Sq Ft",
-          },
-        ],
-      },
-      {
-        title: "02-20 Fees",
-        id: "02-20",
-        sub23: [
-          {
-            id: "02-20-00",
-            title: "02-20-00 Fees LUMP SUM NM",
-          },
-        ],
-      },
-    ],
-  },
-  {
-    id: "03-",
-    title: "03- Construction Loan Costs",
-    parentSubcat: [
-      {
-        title: "03-00 Construction Loan Origins",
-        id: "03-00",
-        sub21: [
-          {
-            id: "03-00-00",
-            title: "03-00-00 Planning General",
-          },
-          {
-            id: "03-00-11",
-            title: "03-00-11 Pre Construction",
-          },
-        ],
-      },
-      {
-        title: "03-10 Lot Costs",
-        id: "03-10",
-        sub22: [
-          {
-            id: "03-10-10",
-            title: "02-10-10 Lot Purchase Cost",
-          },
-          {
-            id: "03-10-20",
-            title: "02-10-20 Pre Construction Lot Application Cost",
-          },
-        ],
-      },
-      {
-        title: "03-20 Sheathing",
-        id: "03-20",
-        sub23: [
-          {
-            id: "03-20-00",
-            title: "03-20-00 Cable Sheathing",
-          },
-        ],
-      },
-    ],
-  },
-  {
-    id: "04-",
-    title: "04- Demolition",
-    parentSubcat: [
-      {
-        title: "04-00 Demolition LUMP SUM",
-        id: "04-00",
-        sub21: [
-          {
-            id: "04-00-00",
-            title: "04-00-00 Planning General",
-          },
-          {
-            id: "04-00-11",
-            title: "04-00-11 Pre Construction",
-          },
-        ],
-      },
-      {
-        title: "04-10 Lot Costs",
-        id: "04-10",
-        sub22: [
-          {
-            id: "04-10-10",
-            title: "02-10-10 Lot Purchase Cost",
-          },
-          {
-            id: "04-10-20",
-            title: "02-10-20 Pre Construction Lot Application Cost",
-          },
-        ],
-      },
-      {
-        title: "04-20 Sheathing",
-        id: "04-20",
-        sub23: [
-          {
-            id: "04-20-00",
-            title: "04-20-00 Cable Sheathing",
-          },
-        ],
-      },
-    ],
-  },
-];
-
-var mappedData = [
-  {
-    id: "02-",
-    title: "02- Permits, Fees & Bonds",
-    parentSubcat: [
-      {
-        title: "02-00 Permits, Fees & Bonds - LUMP SUM",
-        id: "02-00",
-        sub21: [
-          {
-            id: "02-00-00",
-            title: "02-00-00 Planning General",
-          },
-          {
-            id: "02-00-11",
-            title: "02-00-11 Bond",
-          },
-        ],
-      },
-    ],
-  },
-];
-
-var indent = 1;
-
 $(function () {
   $("#add-items").css("visibility", "hidden");
   $("#map-items").css("visibility", "hidden");
   $("#unmap-items").css("visibility", "hidden");
 
-  startBuildCategory(jsonData);
-  startBuildQuickBook(jsonData);
-  startBuildMapped(mappedData);
+  startBuildCategory(10622295);
+  startBuildQuickBook(10622295);
+  startBuildMapped(10622295);
 
   var lastChecked = null;
   var dragging = false;
@@ -303,6 +89,115 @@ $(function () {
   });
 });
 
+function checkChilds(object) {
+  var keys = Object.keys(object);
+  var children = keys.filter(function (key) {
+    return object[key].constructor === Array;
+  });
+  if (children) {
+    return children;
+  }
+}
+
+function startBuildCategory() {
+  if (!arguments[0]) return;
+
+  var job_id = arguments[0];
+  var element = document.getElementById("tree");
+  var jsonData = getCategories(job_id);
+
+  if (!jsonData) return;
+
+  jsonData.forEach(function (data) {
+    if (!data.cat_name && !data.cat_nbr) return;
+    var liParent = document.createElement("tr");
+    liParent.innerHTML =
+      '<td width="45%" style="padding-left: ' +
+      data.cat_level * 15 +
+      'px" data-id="' +
+      data.cat_nbr +
+      '" data-title="' +
+      data.cat_name +
+      '">  <span>' +
+      data.cat_name +
+      '</span></td><td width="10%" class="center">Item</td><td style="padding-left: ' +
+      data.cat_level * 15 +
+      'px" width="45%" id="' +
+      data.cat_nbr +
+      '"></td>';
+    element.appendChild(liParent);
+  });
+}
+
+function selectedCategoryItems() {
+  var selectedItems = [];
+  $("#tree tr").each(function (index, value) {
+    if (
+      $(value).attr("class") === "active" &&
+      $(value).find("td:first").data("id")
+    ) {
+      selectedItems.push($(value).find("td:first").data("id"));
+    }
+  });
+  return selectedItems;
+}
+
+function startBuildQuickBook() {
+  if (!arguments[0] || !Array.isArray(arguments[0])) return;
+  var jsonData = arguments[0];
+  var element = document.getElementById("account-items");
+  jsonData.forEach(function (data) {
+    if (!data.cat_name && !data.cat_nbr) return;
+    var liParent = document.createElement("tr");
+    liParent.innerHTML =
+      '<td width="45%" style="padding-left: ' +
+      data.cat_level * 15 +
+      'px" data-id="' +
+      data.cat_nbr +
+      '" data-title="' +
+      data.cat_name +
+      '">  <span>' +
+      data.cat_name +
+      "</span></td>";
+    element.appendChild(liParent);
+  });
+}
+
+function selectedQuickBookItems() {
+  var selectedItems = [];
+  $("#account-items tr").each(function (index, value) {
+    if (
+      $(value).attr("class") === "active" &&
+      $(value).find("td:first").data("id")
+    ) {
+      selectedItems.push($(value).find("td:first").data("id"));
+    }
+  });
+  return selectedItems;
+}
+
+function startBuildMapped() {
+  if (!arguments[0] || !Array.isArray(arguments[0])) return;
+  var jsonData = arguments[0];
+  jsonData.forEach(function (data) {
+    $("#" + data.id).attr("data-id", data.id);
+    $("#" + data.id).html("<span>" + data.title + "</span>");
+  });
+}
+
+function selectedMappedItems() {
+  var selectedItems = [];
+  $("#tree tr").each(function (index, value) {
+    if (
+      $(value).attr("class") === "active" &&
+      $(value).children("td:eq(2)").attr("data-id")
+    ) {
+      selectedItems.push($(value).children("td:eq(2)").attr("data-id"));
+    }
+  });
+  return selectedItems;
+}
+
 function showActionButtons() {
   if ($("#tree tr").hasClass("active")) {
     $("#add-items").css("visibility", "visible");
@@ -330,135 +225,45 @@ function showActionButtons() {
   }
 }
 
-function checkChilds(object) {
-  var keys = Object.keys(object);
-  var children = keys.filter(function (key) {
-    return object[key].constructor === Array;
-  });
-  if (children) {
-    return children;
-  }
+function getAccounts() {
+  var request = new XMLHttpRequest();
+  request.onreadystatechange = function () {
+    if (request.readyState == 4 && request.status == 200) {
+      console.log(request.status);
+    }
+  };
+  request.open(
+    "GET",
+    "https://dev-testd.buildstar.com/app/sync/category_map_rpc.cfm?req=getAccounts",
+    true
+  );
+  request.send(null);
 }
 
-function startBuildCategory() {
-  if (!arguments[0] || !Array.isArray(arguments[0])) return;
-  var jsonData = arguments[0];
-  var element = document.getElementById("tree");
-  jsonData.forEach(function (data) {
-    var liParent = document.createElement("tr");
-    liParent.innerHTML =
-      '<td width="45%" style="padding-left: ' +
-      indent * 25 +
-      'px" data-id="' +
-      data.id +
-      '" data-title="' +
-      data.title +
-      '">  <span>' +
-      data.title +
-      '</span></td><td width="10%" class="center">Item</td><td style="padding-left: ' +
-      indent * 25 +
-      'px" width="45%" id="' +
-      data.id +
-      '"></td>';
-    element.appendChild(liParent);
-    if (checkChilds(data) !== undefined && checkChilds(data).length > 0) {
-      indent = indent + 1;
-      var checkChildIndex = checkChilds(data);
-      checkChildIndex.forEach(function (index) {
-        var children = data[index];
-        startBuildCategory(children);
-      });
+function getCategories() {
+  if (!arguments[0]) return;
+  var job_id = arguments[0];
+  var xhr = new XMLHttpRequest();
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState == 4 && xhr.status == 200) {
+      if (xhr.response && xhr.response.error_code == 0) {
+        return xhr.response.data;
+      }
     }
-  });
-  indent = indent - 1;
-}
-
-function selectedCategoryItems() {
-  var selectedItems = [];
-  $("#tree tr").each(function (index, value) {
-    if (
-      $(value).attr("class") === "active" &&
-      $(value).find("td:first").data("id")
-    ) {
-      selectedItems.push($(value).find("td:first").data("id"));
-    }
-  });
-  return selectedItems;
-}
-
-function startBuildQuickBook() {
-  if (!arguments[0] || !Array.isArray(arguments[0])) return;
-  var jsonData = arguments[0];
-  var element = document.getElementById("account-items");
-  jsonData.forEach(function (data) {
-    var liParent = document.createElement("tr");
-    liParent.innerHTML =
-      '<td width="45%" style="padding-left: ' +
-      indent * 25 +
-      'px" data-id="' +
-      data.id +
-      '" data-title="' +
-      data.title +
-      '">  <span>' +
-      data.title +
-      "</span></td>";
-    element.appendChild(liParent);
-    if (checkChilds(data) !== undefined && checkChilds(data).length > 0) {
-      indent = indent + 1;
-      var checkChildIndex = checkChilds(data);
-      checkChildIndex.forEach(function (index) {
-        var children = data[index];
-        startBuildQuickBook(children);
-      });
-    }
-  });
-  indent = indent - 1;
-}
-
-function selectedQuickBookItems() {
-  var selectedItems = [];
-  $("#account-items tr").each(function (index, value) {
-    if (
-      $(value).attr("class") === "active" &&
-      $(value).find("td:first").data("id")
-    ) {
-      selectedItems.push($(value).find("td:first").data("id"));
-    }
-  });
-  return selectedItems;
-}
-
-function startBuildMapped() {
-  if (!arguments[0] || !Array.isArray(arguments[0])) return;
-  var jsonData = arguments[0];
-  jsonData.forEach(function (data) {
-    $("#" + data.id).attr("data-id", data.id);
-    $("#" + data.id).html("<span>" + data.title + "</span>");
-    if (checkChilds(data) !== undefined) {
-      indent = indent + 1;
-      var checkChildIndex = checkChilds(data);
-      var children = data[checkChildIndex];
-      startBuildMapped(children);
-    }
-  });
-  indent = 1;
-}
-
-function selectedMappedItems() {
-  var selectedItems = [];
-  $("#tree tr").each(function (index, value) {
-    if (
-      $(value).attr("class") === "active" &&
-      $(value).children("td:eq(2)").attr("data-id")
-    ) {
-      selectedItems.push($(value).children("td:eq(2)").attr("data-id"));
-    }
-  });
-  return selectedItems;
+  };
+  xhr.open(
+    "GET",
+    "https://dev-testd.buildstar.com/app/sync/category_map_rpc.cfm?req=getCategories&job_id=" +
+      job_id,
+    true
+  );
+  xhr.send(null);
 }
 
 function getItems() {
-  var http = new XMLHttphttp();
+  if (!arguments[0]) return;
+  var job_id = arguments[0];
+  var http = new XMLHttpRequest();
   var job_id = "";
   http.onreadystatechange = function () {
     if (http.readyState === 4 && http.status === 200) {
@@ -469,18 +274,14 @@ function getItems() {
     "GET",
     "https://dev-testd.buildstar.com/app/sync/category_map_rpc.cfm?req=getItems" +
       "?job_id=" +
-      1,
+      job_id,
     true
   );
   http.send(null);
 }
 
-function getAccounts() {}
-
-function getCategories() {}
-
 function sendMappedItems() {
-  if (!arguments[0] || !Array.isArray(arguments[0])) return;
+  if (!arguments[0]) return;
   var mappedItems = arguments[0];
   var request = new XMLHttpRequest();
   mappedItems.forEach(function (item) {
@@ -514,5 +315,3 @@ function removeMappedItems() {
   }
   $(".modal").toggleClass("is-visible");
 }
-
-function clearAllSelected() {}
