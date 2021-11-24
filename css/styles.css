@@ -193,3 +193,7 @@ td > span:hover,
 .action-buttons > span:hover {
   transform: scale(1.03);
 }
+
+#add-items, #map-items, #unmap-items {
+  visibility: hidden;
+}

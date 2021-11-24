@@ -1,13 +1,9 @@
 "use strict";
 
 $(function () {
-  $("#add-items").css("visibility", "hidden");
-  $("#map-items").css("visibility", "hidden");
-  $("#unmap-items").css("visibility", "hidden");
-
-  getCategories(10622295);
-  startBuildQuickBook(10622295);
-  startBuildMapped(10622295);
+  getCategories($('#new_template_id').val());
+  startBuildQuickBook($('#new_template_id').val());
+  startBuildMapped($('#new_template_id').val());
 
   var lastChecked = null;
   var dragging = false;
@@ -32,7 +28,7 @@ $(function () {
     showActionButtons();
   });
   ["#tree tr", "#account-items tr"].forEach(function (currentElement) {
-    $("body").on("click", currentElement, function (e) {
+    $("table").on("click", currentElement, function (e) {
       var $element = $(currentElement);
       if (!lastChecked) {
         lastChecked = this;
