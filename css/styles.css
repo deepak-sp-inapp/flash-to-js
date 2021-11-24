@@ -133,7 +133,7 @@ table {
   height: 100%;
   table-layout: fixed;
   border-collapse: collapse;
-  background: rgb(235, 234, 234);
+  background: inherit;
   border-spacing: 0px;
 }
 

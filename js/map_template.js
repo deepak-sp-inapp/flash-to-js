@@ -31,9 +31,9 @@ $(function () {
     dragging = false;
     showActionButtons();
   });
-  [$("#tree tr"), $("#account-items tr")].forEach(function (currentElement) {
-    var $element = currentElement;
-    $element.click(function (e) {
+  ["#tree tr", "#account-items tr"].forEach(function (currentElement) {
+    $("body").on("click", currentElement, function (e) {
+      var $element = $(currentElement);
       if (!lastChecked) {
         lastChecked = this;
       }
@@ -245,8 +245,6 @@ function getCategories() {
       } else {
         console.log("Error fetching remote data");
       }
-    } else {
-      console.log("fetching data..", xhr.readyState);
     }
   };
   xhr.open(
