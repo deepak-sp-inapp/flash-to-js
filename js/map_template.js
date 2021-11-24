@@ -1,10 +1,7 @@
 "use strict";
 
+var quickBookItems = [];
 $(function () {
-  getCategories($('#new_template_id').val());
-  startBuildQuickBook($('#new_template_id').val());
-  startBuildMapped($('#new_template_id').val());
-
   var lastChecked = null;
   var dragging = false;
 
@@ -16,8 +13,8 @@ $(function () {
         dragging = true;
         e.target.parentElement.classList.add("active");
       }
+      showActionButtons();
     });
-    showActionButtons();
   });
   $("#tree, #account-items").on("mouseup", function (e) {
     $("#tree, #account-items").off("mousemove");
@@ -51,10 +48,39 @@ $(function () {
     });
   });
 
-  $("#add-items, #map-items").click(function (e) {
+  $("#add-items").click(function (e) {
     console.log("category items", selectedCategoryItems());
     console.log("quickbook items", selectedQuickBookItems());
     console.log("mapped items", selectedMappedItems());
+  });
+
+  $("#map-items").click(function (e) {
+    var job_id = $("#new_template_id").val();
+    var mappedItems = selectedCategoryItems();
+    var qbItems = selectedQuickBookItems();
+    var requests = new Array(selectedCategoryItems.length);
+    for (var i = 0; i < mappedItems.length; i++) {
+      var params = new FormData();
+      params.append("req", "setMapping");
+      params.append("job_id", job_id);
+      params.append("cat_nbr", mappedItems[i]);
+      if (qbItems.length > 1) {
+        params.append("item_id", qbItems[i]);
+      } else {
+        params.append("item_id", qbItems[0]);
+      }
+      requests[i] = new XMLHttpRequest();
+      requests[i].open(
+        "POST",
+        "https://dev-testd.buildstar.com/app/sync/category_map_rpc.cfm",
+        true
+      );
+      requests[i].onload = function () {
+        console.log(requests[i].response);
+      };
+      requests[i].send(params);
+    }
+    getCategories();
   });
 
   $("#unmap-items").click(function (e) {
@@ -83,6 +109,9 @@ $(function () {
   $(".modal-toggle").click(function (e) {
     $(".modal").toggleClass("is-visible");
   });
+
+  getItems();
+  getCategories();
 });
 
 function startBuildCategory() {
@@ -93,6 +122,9 @@ function startBuildCategory() {
   jsonData.forEach(function (data) {
     if (!data.cat_desc && !data.cat_nbr) return;
     var liParent = document.createElement("tr");
+    var mappedItem = quickBookItems.filter(function (item) {
+      return item.item_id == data.item_id;
+    })[0];
     liParent.innerHTML =
       '<td width="45%" style="padding-left: ' +
       data.cat_level * 15 +
@@ -102,11 +134,19 @@ function startBuildCategory() {
       data.cat_desc +
       '">  <span>' +
       data.cat_desc +
-      '</span></td><td width="10%" class="center">Item</td><td style="padding-left: ' +
+      '</span></td><td width="10%" class="center">' +
+      (mappedItem && mappedItem.item_type
+        ? mappedItem.item_type.toLowerCase()
+        : "") +
+      '</td><td style="padding-left: ' +
       data.cat_level * 15 +
-      'px" width="45%" id="' +
+      'px" width="45%" data-id="' +
+      (mappedItem && mappedItem.item_id ? mappedItem.item_id : "") +
+      '" id="' +
       data.cat_nbr +
-      '"></td>';
+      '">' +
+      (mappedItem && mappedItem.item_name ? mappedItem.item_name : "") +
+      "</td>";
     element.appendChild(liParent);
   });
 }
@@ -129,17 +169,17 @@ function startBuildQuickBook() {
   var jsonData = arguments[0];
   var element = document.getElementById("account-items");
   jsonData.forEach(function (data) {
-    if (!data.cat_desc && !data.cat_nbr) return;
+    if (!data.item_name && !data.item_id) return;
     var liParent = document.createElement("tr");
     liParent.innerHTML =
       '<td width="45%" style="padding-left: ' +
-      data.cat_level * 15 +
+      data.item_level * 15 +
       'px" data-id="' +
-      data.cat_nbr +
+      data.item_id +
       '" data-title="' +
-      data.cat_desc +
+      data.item_name +
       '">  <span>' +
-      data.cat_desc +
+      data.item_name +
       "</span></td>";
     element.appendChild(liParent);
   });
@@ -158,15 +198,6 @@ function selectedQuickBookItems() {
   return selectedItems;
 }
 
-function startBuildMapped() {
-  if (!arguments[0] || !Array.isArray(arguments[0])) return;
-  var jsonData = arguments[0];
-  jsonData.forEach(function (data) {
-    $("#" + data.id).attr("data-id", data.id);
-    $("#" + data.id).html("<span>" + data.title + "</span>");
-  });
-}
-
 function selectedMappedItems() {
   var selectedItems = [];
   $("#tree tr").each(function (index, value) {
@@ -183,12 +214,26 @@ function selectedMappedItems() {
 function showActionButtons() {
   if ($("#tree tr").hasClass("active")) {
     $("#add-items").css("visibility", "visible");
+  } else {
+    $("#add-items").css("visibility", "hidden");
   }
+
   if (
     $("#tree tr").hasClass("active") &&
     $("#account-items tr").hasClass("active")
   ) {
-    $("#map-items").css("visibility", "visible");
+    var selectedCategories = selectedCategoryItems();
+    var selectedQuickBook = selectedQuickBookItems();
+    if (
+      selectedQuickBook.length === 1 ||
+      selectedCategories.length === selectedQuickBook.length
+    ) {
+      $("#map-items").css("visibility", "visible");
+    } else {
+      $("#map-items").css("visibility", "hidden");
+    }
+  } else {
+    $("#map-items").css("visibility", "hidden");
   }
 
   var showCount = 0;
@@ -208,24 +253,33 @@ function showActionButtons() {
 }
 
 function getAccounts() {
-  var request = new XMLHttpRequest();
-  request.onreadystatechange = function () {
-    if (request.readyState == 4 && request.status == 200) {
-      console.log(request.status);
+  var xhr = new XMLHttpRequest();
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState == 4 && xhr.status == 200) {
+      if (xhr.response) {
+        var response = xhr.response;
+        response =
+          typeof response == "object" ? response : JSON.parse(response);
+        if (response.data) {
+          startBuildQuickBook(response.data);
+        } else {
+          console.log("No data");
+        }
+      } else {
+        console.log("Error fetching remote data");
+      }
     }
   };
-  request.open(
+  xhr.open(
     "GET",
     "https://dev-testd.buildstar.com/app/sync/category_map_rpc.cfm?req=getAccounts",
     true
   );
-  request.send(null);
+  xhr.send(null);
 }
 
 function getCategories() {
-  if (!arguments[0]) return;
-  var job_id = arguments[0];
-
+  var job_id = $("#new_template_id").val();
   var xhr = new XMLHttpRequest();
   xhr.onreadystatechange = function () {
     if (xhr.readyState == 4 && xhr.status == 200) {
@@ -253,42 +307,30 @@ function getCategories() {
 }
 
 function getItems() {
-  if (!arguments[0]) return;
-  var job_id = arguments[0];
-  var http = new XMLHttpRequest();
-  var job_id = "";
-  http.onreadystatechange = function () {
-    if (http.readyState === 4 && http.status === 200) {
-      console.log(http.status, http.response);
+  var xhr = new XMLHttpRequest();
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState == 4 && xhr.status == 200) {
+      if (xhr.response) {
+        var response = xhr.response;
+        response =
+          typeof response == "object" ? response : JSON.parse(response);
+        if (response.data) {
+          quickBookItems = response.data;
+          startBuildQuickBook(response.data);
+        } else {
+          console.log("No data");
+        }
+      } else {
+        console.log("Error fetching remote data");
+      }
     }
   };
-  http.open(
+  xhr.open(
     "GET",
-    "https://dev-testd.buildstar.com/app/sync/category_map_rpc.cfm?req=getItems" +
-      "?job_id=" +
-      job_id,
+    "https://dev-testd.buildstar.com/app/sync/category_map_rpc.cfm?req=getItems",
     true
   );
-  http.send(null);
-}
-
-function sendMappedItems() {
-  if (!arguments[0]) return;
-  var mappedItems = arguments[0];
-  var request = new XMLHttpRequest();
-  mappedItems.forEach(function (item) {
-    var url =
-      "https://dev-testd.buildstar.com/app/sync/category_map_rpc.cfm?req" +
-      item;
-    request.open("GET", url);
-    request.send();
-
-    // not handling readyState, since we'll be following synchronous requests
-    if (request.status === 200) {
-      var data = JSON.parse(request.responseText);
-      console.log("response => " + data);
-    }
-  });
+  xhr.send(null);
 }
 
 function removeMappedItems() {
