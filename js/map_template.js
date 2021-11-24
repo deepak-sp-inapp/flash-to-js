@@ -58,7 +58,7 @@ $(function () {
     var job_id = $("#new_template_id").val();
     var mappedItems = selectedCategoryItems();
     var qbItems = selectedQuickBookItems();
-    var requests = new Array(selectedCategoryItems.length);
+    var requests = [];
     for (var i = 0; i < mappedItems.length; i++) {
       var params = new FormData();
       params.append("req", "setMapping");
@@ -73,7 +73,7 @@ $(function () {
       requests[i].open(
         "POST",
         "https://dev-testd.buildstar.com/app/sync/category_map_rpc.cfm",
-        true
+        false
       );
       requests[i].onload = function () {
         console.log(requests[i].response);
@@ -99,10 +99,34 @@ $(function () {
       });
       content += "</tbody></table>";
       content +=
-        '<button class="modal-toggle" onclick="removeMappedItems()">Ok</button>';
+        '<button class="modal-toggle" id="deleteMappedItems">Ok</button>';
       $(".modal-heading").html(header);
       $(".modal-content").html(content);
-      $(".modal").toggleClass("is-visible");
+      $(".modal")
+        .toggleClass("is-visible")
+        .on("click", "#deleteMappedItems", function () {
+          var requests = [];
+          var job_id = $("#new_template_id").val();
+          for (var i = 0; i < mappedItems.length; i++) {
+            var params = new FormData();
+            params.append("req", "setMapping");
+            params.append("job_id", job_id);
+            params.append("cat_nbr", mappedItems[i]);
+            params.append("item_id", "");
+            requests[i] = new XMLHttpRequest();
+            requests[i].open(
+              "POST",
+              "https://dev-testd.buildstar.com/app/sync/category_map_rpc.cfm",
+              false
+            );
+            requests[i].onload = function () {
+              console.log(requests[i].response);
+            };
+            requests[i].send(params);
+          }
+          getCategories();
+          $(".modal").toggleClass("is-visible");
+        });
     }
   });
 
@@ -140,8 +164,10 @@ function startBuildCategory() {
         : "") +
       '</td><td style="padding-left: ' +
       data.cat_level * 15 +
-      'px" width="45%" data-id="' +
+      'px" width="45%" data-qb-id="' +
       (mappedItem && mappedItem.item_id ? mappedItem.item_id : "") +
+      '" data-id="' +
+      data.cat_nbr +
       '" id="' +
       data.cat_nbr +
       '">' +
@@ -203,7 +229,7 @@ function selectedMappedItems() {
   $("#tree tr").each(function (index, value) {
     if (
       $(value).attr("class") === "active" &&
-      $(value).children("td:eq(2)").attr("data-id")
+      $(value).children("td:eq(2)").attr("data-qb-id")
     ) {
       selectedItems.push($(value).children("td:eq(2)").attr("data-id"));
     }
@@ -331,21 +357,4 @@ function getItems() {
     true
   );
   xhr.send(null);
-}
-
-function removeMappedItems() {
-  var mappedItems = selectedMappedItems();
-  if (mappedItems && mappedItems.length > 0) {
-    $("#tree tr").each(function (index, value) {
-      var currentId = $(value).children("td:eq(2)").attr("data-id");
-      if (
-        $(value).attr("class") === "active" &&
-        currentId &&
-        mappedItems.indexOf(currentId.toString()) > -1
-      ) {
-        $(value).children("td:eq(2)").get(0).innerHTML = "";
-      }
-    });
-  }
-  $(".modal").toggleClass("is-visible");
 }
