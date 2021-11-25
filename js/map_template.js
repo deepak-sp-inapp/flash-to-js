@@ -1,5 +1,4 @@
 "use strict";
-
 var quickBookItems = [];
 $(function () {
   var lastChecked = null;
@@ -16,6 +15,7 @@ $(function () {
       showActionButtons();
     });
   });
+
   $("#tree, #account-items").on("mouseup", function (e) {
     $("#tree, #account-items").off("mousemove");
     if (dragging) {
@@ -24,6 +24,7 @@ $(function () {
     dragging = false;
     showActionButtons();
   });
+
   ["#tree tr", "#account-items tr"].forEach(function (currentElement) {
     $("table").on("click", currentElement, function (e) {
       var $element = $(currentElement);
@@ -55,33 +56,34 @@ $(function () {
   });
 
   $("#map-items").click(function (e) {
-    $('#loader').show(0);
-    var job_id = $("#new_template_id").val();
-    var mappedItems = selectedCategoryItems();
-    var qbItems = selectedQuickBookItems();
-    var requests = [];
-    for (var i = 0; i < mappedItems.length; i++) {
-      var params = new FormData();
-      params.append("req", "setMapping");
-      params.append("job_id", job_id);
-      params.append("cat_nbr", mappedItems[i]);
-      if (qbItems.length > 1) {
-        params.append("item_id", qbItems[i]);
-      } else {
-        params.append("item_id", qbItems[0]);
+    $.when($("#loader").show()).then(function () {
+      var job_id = $("#new_template_id").val();
+      var mappedItems = selectedCategoryItems();
+      var qbItems = selectedQuickBookItems();
+      var requests = [];
+      for (var i = 0; i < mappedItems.length; i++) {
+        var params = new FormData();
+        params.append("req", "setMapping");
+        params.append("job_id", job_id);
+        params.append("cat_nbr", mappedItems[i]);
+        if (qbItems.length > 1) {
+          params.append("item_id", qbItems[i]);
+        } else {
+          params.append("item_id", qbItems[0]);
+        }
+        requests[i] = new XMLHttpRequest();
+        requests[i].open(
+          "POST",
+          "https://dev-testd.buildstar.com/app/sync/category_map_rpc.cfm",
+          false
+        );
+        requests[i].onload = function () {
+          console.log(requests[i].response);
+        };
+        requests[i].send(params);
       }
-      requests[i] = new XMLHttpRequest();
-      requests[i].open(
-        "POST",
-        "https://dev-testd.buildstar.com/app/sync/category_map_rpc.cfm",
-        false
-      );
-      requests[i].onload = function () {
-        console.log(requests[i].response);
-      };
-      requests[i].send(params);
-    }
-    getCategories();
+      getCategories();
+    });
   });
 
   $("#unmap-items").click(function (e) {
@@ -105,29 +107,32 @@ $(function () {
       $(".modal-content").html(content);
       $(".modal")
         .toggleClass("is-visible")
-        .on("click", "#deleteMappedItems", function () {
-          $(".modal").toggleClass("is-visible");
-          $('#loader').show(0);
-          var requests = [];
-          var job_id = $("#new_template_id").val();
-          for (var i = 0; i < mappedItems.length; i++) {
-            var params = new FormData();
-            params.append("req", "setMapping");
-            params.append("job_id", job_id);
-            params.append("cat_nbr", mappedItems[i]);
-            params.append("item_id", "");
-            requests[i] = new XMLHttpRequest();
-            requests[i].open(
-              "POST",
-              "https://dev-testd.buildstar.com/app/sync/category_map_rpc.cfm",
-              false
-            );
-            requests[i].onload = function () {
-              console.log(requests[i].response);
-            };
-            requests[i].send(params);
-          }
-          getCategories();
+        .on("click", "#deleteMappedItems", function (e) {
+          $.when(
+            $(".modal").css("visibility", "hidden"),
+            $("#loader").css("display", "block")
+          ).then(function () {
+            var requests = [];
+            var job_id = $("#new_template_id").val();
+            for (var i = 0; i < mappedItems.length; i++) {
+              var params = new FormData();
+              params.append("req", "setMapping");
+              params.append("job_id", job_id);
+              params.append("cat_nbr", mappedItems[i]);
+              params.append("item_id", "");
+              requests[i] = new XMLHttpRequest();
+              requests[i].open(
+                "POST",
+                "https://dev-testd.buildstar.com/app/sync/category_map_rpc.cfm",
+                false
+              );
+              requests[i].onload = function () {
+                console.log(requests[i].response);
+              };
+              requests[i].send(params);
+            }
+            getCategories();
+          });
         });
     }
   });
@@ -136,23 +141,24 @@ $(function () {
     $(".modal").toggleClass("is-visible");
   });
 
-  getItems();
-  getCategories();
+  $.when($("#loader").css("display", "block")).then(function () {
+    getItems();
+    getCategories();
+  });
 });
 
 function startBuildCategory() {
   if (!arguments[0]) return;
   var jsonData = arguments[0];
   var element = document.getElementById("tree");
-
+  var liParent = "";
   jsonData.forEach(function (data) {
     if (!data.cat_desc && !data.cat_nbr) return;
-    var liParent = document.createElement("tr");
     var mappedItem = quickBookItems.filter(function (item) {
       return item.item_id == data.item_id;
     })[0];
-    liParent.innerHTML =
-      '<td width="45%" style="padding-left: ' +
+    liParent +=
+      '<tr><td width="45%" style="padding-left: ' +
       data.cat_level * 15 +
       'px" data-id="' +
       data.cat_nbr +
@@ -174,9 +180,9 @@ function startBuildCategory() {
       data.cat_nbr +
       '">' +
       (mappedItem && mappedItem.item_name ? mappedItem.item_name : "") +
-      "</td>";
-    element.appendChild(liParent);
+      "</td></tr>";
   });
+  element.innerHTML = liParent;
 }
 
 function selectedCategoryItems() {
@@ -196,11 +202,11 @@ function startBuildQuickBook() {
   if (!arguments[0] || !Array.isArray(arguments[0])) return;
   var jsonData = arguments[0];
   var element = document.getElementById("account-items");
+  var liParent = "";
   jsonData.forEach(function (data) {
     if (!data.item_name && !data.item_id) return;
-    var liParent = document.createElement("tr");
-    liParent.innerHTML =
-      '<td width="45%" style="padding-left: ' +
+    liParent +=
+      '<tr><td width="45%" style="padding-left: ' +
       data.item_level * 15 +
       'px" data-id="' +
       data.item_id +
@@ -208,9 +214,9 @@ function startBuildQuickBook() {
       data.item_name +
       '">  <span>' +
       data.item_name +
-      "</span></td>";
-    element.appendChild(liParent);
+      "</span></td></tr>";
   });
+  element.innerHTML = liParent;
 }
 
 function selectedQuickBookItems() {
@@ -303,11 +309,13 @@ function getAccounts() {
     "https://dev-testd.buildstar.com/app/sync/category_map_rpc.cfm?req=getAccounts",
     true
   );
+  xhr.onerror = function (e) {
+    console.log(e);
+  };
   xhr.send(null);
 }
 
 function getCategories() {
-  $("#loader").show(0);
   var job_id = $("#new_template_id").val();
   var xhr = new XMLHttpRequest();
   xhr.onreadystatechange = function () {
@@ -335,6 +343,10 @@ function getCategories() {
       new Date().getTime(),
     true
   );
+  xhr.onerror = function (e) {
+    $("#loader").fadeOut(200);
+    console.log(e);
+  };
   xhr.send(null);
 }
 
@@ -362,5 +374,8 @@ function getItems() {
     "https://dev-testd.buildstar.com/app/sync/category_map_rpc.cfm?req=getItems",
     true
   );
+  xhr.onerror = function (e) {
+    console.log(e);
+  };
   xhr.send(null);
 }
