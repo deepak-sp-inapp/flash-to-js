@@ -55,6 +55,7 @@ $(function () {
   });
 
   $("#map-items").click(function (e) {
+    $('#loader').show(0);
     var job_id = $("#new_template_id").val();
     var mappedItems = selectedCategoryItems();
     var qbItems = selectedQuickBookItems();
@@ -91,7 +92,7 @@ $(function () {
       $("#tree tr").each(function (index, value) {
         if (
           $(value).attr("class") === "active" &&
-          $(value).children("td:eq(2)").attr("data-id")
+          $(value).children("td:eq(2)").attr("data-qb-id")
         ) {
           content +=
             "<tr>" + $(value).children("td:eq(2)").get(0).outerHTML + "</tr>";
@@ -105,6 +106,8 @@ $(function () {
       $(".modal")
         .toggleClass("is-visible")
         .on("click", "#deleteMappedItems", function () {
+          $(".modal").toggleClass("is-visible");
+          $('#loader').show(0);
           var requests = [];
           var job_id = $("#new_template_id").val();
           for (var i = 0; i < mappedItems.length; i++) {
@@ -125,7 +128,6 @@ $(function () {
             requests[i].send(params);
           }
           getCategories();
-          $(".modal").toggleClass("is-visible");
         });
     }
   });
@@ -266,7 +268,7 @@ function showActionButtons() {
   $("#tree tr").each(function (index, value) {
     if (
       $(value).attr("class") === "active" &&
-      $(value).children("td:eq(2)").attr("data-id")
+      $(value).children("td:eq(2)").attr("data-qb-id")
     ) {
       showCount = showCount + 1;
     }
@@ -305,6 +307,7 @@ function getAccounts() {
 }
 
 function getCategories() {
+  $("#loader").show(0);
   var job_id = $("#new_template_id").val();
   var xhr = new XMLHttpRequest();
   xhr.onreadystatechange = function () {
@@ -321,12 +324,15 @@ function getCategories() {
       } else {
         console.log("Error fetching remote data");
       }
+      $("#loader").fadeOut(200);
     }
   };
   xhr.open(
     "GET",
     "https://dev-testd.buildstar.com/app/sync/category_map_rpc.cfm?req=getCategories&job_id=" +
-      job_id,
+      job_id +
+      "&" +
+      new Date().getTime(),
     true
   );
   xhr.send(null);
