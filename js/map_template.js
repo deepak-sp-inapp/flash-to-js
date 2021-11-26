@@ -50,9 +50,9 @@ $(function () {
   });
 
   $("#add-items").click(function (e) {
-    console.log("category items", selectedCategoryItems());
-    console.log("quickbook items", selectedQuickBookItems());
-    console.log("mapped items", selectedMappedItems());
+    $.when($("#loader").css("display", "block")).then(function () {
+      getItemAddRequest();
+    });
   });
 
   $("#map-items").click(function (e) {
@@ -108,30 +108,9 @@ $(function () {
       $(".modal")
         .toggleClass("is-visible")
         .on("click", "#deleteMappedItems", function (e) {
-          $.when(
-            $(".modal").css("visibility", "hidden"),
-            $("#loader").css("display", "block")
-          ).then(function () {
-            var requests = [];
-            var job_id = $("#new_template_id").val();
-            for (var i = 0; i < mappedItems.length; i++) {
-              var params = new FormData();
-              params.append("req", "setMapping");
-              params.append("job_id", job_id);
-              params.append("cat_nbr", mappedItems[i]);
-              params.append("item_id", "");
-              requests[i] = new XMLHttpRequest();
-              requests[i].open(
-                "POST",
-                "https://dev-testd.buildstar.com/app/sync/category_map_rpc.cfm",
-                false
-              );
-              requests[i].onload = function () {
-                console.log(requests[i].response);
-              };
-              requests[i].send(params);
-            }
-            getCategories();
+          e.stopPropagation();
+          $.when($("#loader").css("display", "block")).then(function () {
+            unMapItems();
           });
         });
     }
@@ -146,6 +125,32 @@ $(function () {
     getCategories();
   });
 });
+
+function unMapItems() {
+  $.when($(".modal").removeClass("is-visible")).then(function () {
+    var mappedItems = selectedMappedItems();
+    var requests = [];
+    var job_id = $("#new_template_id").val();
+    for (var i = 0; i < mappedItems.length; i++) {
+      var params = new FormData();
+      params.append("req", "setMapping");
+      params.append("job_id", job_id);
+      params.append("cat_nbr", mappedItems[i]);
+      params.append("item_id", "");
+      requests[i] = new XMLHttpRequest();
+      requests[i].open(
+        "POST",
+        "https://dev-testd.buildstar.com/app/sync/category_map_rpc.cfm",
+        false
+      );
+      requests[i].onload = function () {
+        console.log(requests[i].response);
+      };
+      requests[i].send(params);
+    }
+    getCategories();
+  });
+}
 
 function startBuildCategory() {
   if (!arguments[0]) return;
@@ -247,7 +252,12 @@ function selectedMappedItems() {
 
 function showActionButtons() {
   if ($("#tree tr").hasClass("active")) {
-    $("#add-items").css("visibility", "visible");
+    var selectedQuickBook = selectedQuickBookItems();
+    if (selectedQuickBook.length === 1) {
+      $("#add-items").css("visibility", "visible");
+    } else {
+      $("#add-items").css("visibility", "hidden");
+    }
   } else {
     $("#add-items").css("visibility", "hidden");
   }
@@ -378,4 +388,52 @@ function getItems() {
     console.log(e);
   };
   xhr.send(null);
+}
+
+function getItemAddRequest() {
+  return;
+  var job_id = $("#new_template_id").val();
+  var itemsToAdd = selectedCategoryItems();
+  var quickBookItem = selectedQuickBookItems();
+  for (var i = 0; i < itemsToAdd.length; i++) {
+    var params = new FormData();
+    params.append("req", "getItemAddRequest");
+    params.append("job_id", job_id);
+    params.append("cat_nbr", quickBookItem[i]);
+    params.append("item_id", itemsToAdd[i]);
+    requests[i] = new XMLHttpRequest();
+    requests[i].open(
+      "POST",
+      "https://dev-testd.buildstar.com/app/sync/category_map_rpc.cfm",
+      false
+    );
+    requests[i].onload = function () {
+      console.log(requests[i].response);
+      postItemAddResponse(requests[i].response);
+    };
+    requests[i].send(params);
+  }
+  getItems();
+}
+
+function postItemAddResponse() {
+  if (!arguments[0]) return;
+  var xmlReponse = arguments[0];
+  var params = new FormData();
+  params.append("req", "postItemAddResponse");
+  params.append("xml_response", encodeURIComponent(xmlReponse));
+  requests = new XMLHttpRequest();
+  requests.open(
+    "POST",
+    "https://dev-testd.buildstar.com/app/sync/category_map_rpc.cfm",
+    false
+  );
+  requests.onload = function () {
+    console.log(requests[i].response);
+  };
+  requests.setRequestHeader(
+    "Content-Type",
+    "application/x-www-form-urlencoded"
+  );
+  requests.send(params);
 }
