@@ -17,7 +17,7 @@
           <table>
             <thead>
               <tr>
-                <th width="45%">Build category / cost items</th>
+                <th width="45%">BuildStar Category / Cost Item</th>
                 <th width="10%">Type</th>
                 <th width="45%">Map to this item / Account</th>
               </tr>
@@ -32,13 +32,13 @@
       </div>
       <div class="action-buttons">
         <span id="add-items"
-          ><img src="../images/arrow-right.png" alt="add" title="add items"
+          ><img src="../images/arrow-right.png" alt="add" class="pointer" title="add items"
         /></span>
         <span id="map-items"
-          ><img src="../images/double-arrow.png" alt="map" title="map items"
+          ><img src="../images/double-arrow.png" alt="map" class="pointer" title="map items"
         /></span>
         <span id="unmap-items"
-          ><img src="../images/stop.png" alt="unmap" title="unmap items"
+          ><img src="../images/stop.png" alt="unmap" class="pointer" title="unmap items"
         /></span>
       </div>
       <div class="quick-book">
@@ -46,16 +46,27 @@
           <table>
             <thead>
               <tr>
-                <th width="15%">&nbsp;</th>
-                <th width="70%">Quick Book items</th>
-                <th width="15%">&nbsp;</th>
+                <th width="20%">QuickBooks</th>
+                <th width="25%">
+                  <label for="qbItems" class="pointer">
+                    <input type="radio" name="items" value="items" id="qbItems" />
+                    Items
+                  </label>
+                </th>
+                <th width="25%">
+                  <label for="qbAccounts" class="pointer">
+                    <input type="radio" name="items" value="accounts" id="qbAccounts" />
+                    Accounts
+                  </label>
+                </th>
               </tr>
             </thead>
           </table>
         </div>
         <div class="items">
           <table>
-            <tbody id="account-items"></tbody>
+            <tbody id="qb-items"></tbody>
+            <tbody id="qb-accounts"></tbody>
           </table>
         </div>
       </div>
@@ -65,12 +76,11 @@
       <div class="modal-overlay modal-toggle"></div>
       <div class="modal-wrapper modal-transition">
         <div class="modal-header">
-          <button class="modal-close modal-toggle">X</button>
+          <button class="modal-close modal-toggle pointer">X</button>
           <h2 class="modal-heading"></h2>
         </div>
         <div class="modal-body">
-          <div class="modal-content">
-          </div>
+          <div class="modal-content"></div>
         </div>
       </div>
     </div>
