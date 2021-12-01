@@ -132,17 +132,18 @@ $(function () {
   });
 
   $("input[name='items']").on("change", function () {
+    var qbType = $(this).val();
     $.when($("tr").removeClass()).then(function () {
-      getCategories();
+      if (qbType == "items") {
+        $("#qb-accounts").css("display", "none");
+        $("#qb-items").fadeIn(300);
+      }
+      if (qbType == "accounts") {
+        $("#qb-items").css("display", "none");
+        $("#qb-accounts").fadeIn(300);
+      }
+      showActionButtons();
     });
-    if ($(this).val() == "items") {
-      $("#qb-accounts").css("display", "none");
-      $("#qb-items").fadeIn(300);
-    }
-    if ($(this).val() == "accounts") {
-      $("#qb-items").css("display", "none");
-      $("#qb-accounts").fadeIn(300);
-    }
   });
 
   $.when($("#loader").css("display", "block")).then(function () {
