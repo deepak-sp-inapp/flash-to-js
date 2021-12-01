@@ -145,10 +145,11 @@ $(function () {
     }
   });
 
-  $.when($("#loader").css("display", "block"), ).then(function () {
+  $.when($("#loader").css("display", "block")).then(function () {
     getAccounts();
     getItems();
     getCategories();
+    $("input[name='items'][value='items']").trigger("click");
   });
 });
 
@@ -191,11 +192,10 @@ function startBuildCategory() {
   if (!arguments[0]) return;
   var jsonData = arguments[0];
   var element = document.getElementById("tree");
-  var itemType = $("input[name='items']:checked").val();
   var liParent = "";
   jsonData.forEach(function (data) {
     if (!data.cat_desc && !data.cat_nbr) return;
-    if (itemType === "items") {
+    if (data.item_id) {
       var mappedItem = quickBookItems
         .filter(function (item) {
           return item.item_id == data.item_id;
@@ -204,7 +204,7 @@ function startBuildCategory() {
           return { id: item.item_id, name: item.item_name, type: "item" };
         })[0];
     }
-    if (itemType === "accounts") {
+    if (data.account_id) {
       var mappedItem = quickBookAccounts
         .filter(function (item) {
           return item.account_id == data.account_id;
@@ -509,7 +509,11 @@ function getItemAddRequest() {
       $("#loader").fadeOut(200);
       return;
     }
-    var url = "https://dev-testd.buildstar.com/app/sync/category_map_rpc.cfm?req=getItemAddReq&job_id="+job_id+"&cat_nbr="+itemsToAdd[i].id;
+    var url =
+      "https://dev-testd.buildstar.com/app/sync/category_map_rpc.cfm?req=getItemAddReq&job_id=" +
+      job_id +
+      "&cat_nbr=" +
+      itemsToAdd[i].id;
     request.open("GET", url);
     request.onreadystatechange = function () {
       if (
@@ -528,7 +532,7 @@ function getItemAddRequest() {
           //     error = true;
           //   });
         } else {
-          var message = data.error_message ? data.error_message : 'Failed !!';
+          var message = data.error_message ? data.error_message : "Failed !!";
           window.alert(message);
           error = true;
         }
