@@ -523,15 +523,15 @@ function getItemAddRequest() {
       ) {
         var data = JSON.parse(request.response);
         if (data.error === 0) {
-          loop(i + 1, length);
-          // postItemAddResponse(data)
-          //   .then(function (response) {
-          //     loop(i + 1, length);
-          //   })
-          //   .catch(function (error) {
-          //     window.alert(error);
-          //     error = true;
-          //   });
+          var xml_response = execute_qbxml_request(data.xml_response);
+          postItemAddResponse(xml_response)
+            .then(function (response) {
+              loop(i + 1, length);
+            })
+            .catch(function (error) {
+              window.alert(error);
+              error = true;
+            });
         } else {
           var message = data.error_message ? data.error_message : "Failed !!";
           window.alert(message);
@@ -541,6 +541,11 @@ function getItemAddRequest() {
     };
     request.send();
   })(0, itemsToAdd.length);
+}
+
+function execute_qbxml_request(str) {
+  var response = document.c.xQBxmlctl.qbXML(str);
+  return response;
 }
 
 function postItemAddResponse() {
