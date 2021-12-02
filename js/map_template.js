@@ -146,11 +146,13 @@ $(function () {
     });
   });
 
-  $.when($("#loader").css("display", "block")).then(function () {
+  $.when(
+    $("#loader, #qb-items").css("display", "block"),
+    $("input[name='items'][value='items']").prop("checked", true)
+  ).then(function () {
     getAccounts();
     getItems();
     getCategories();
-    $("input[name='items'][value='items']").trigger("click");
   });
 });
 
