@@ -2,8 +2,8 @@
   "use strict";
   var quickBookItems = [];
   var quickBookAccounts = [];
-  var itemScrollPosition;
-  var accountScrollPosition;
+  var currentItemScrollPosition;
+  var currentAccountScrollPosition;
   $(function () {
     var lastChecked = null;
     var dragging = false;
@@ -159,22 +159,22 @@
     });
 
     $("#items").scroll(function () {
-      itemScrollPosition = $("#items").scrollTop();
+      currentItemScrollPosition = $("#items").scrollTop();
     });
     $("#accounts").scroll(function () {
-      accountScrollPosition = $("#accounts").scrollTop();
+      currentAccountScrollPosition = $("#accounts").scrollTop();
     });
   });
 
   function itemScrollPosition() {
-    if (itemScrollPosition) {
-      $("#items").animate({ scrollTop: itemScrollPosition }, 600);
+    if (currentItemScrollPosition) {
+      $("#items").animate({ scrollTop: currentItemScrollPosition }, 600);
     }
   }
 
   function accountScrollPosition() {
-    if (accountScrollPosition) {
-      $("#accounts").animate({ scrollTop: accountScrollPosition }, 600);
+    if (currentAccountScrollPosition) {
+      $("#accounts").animate({ scrollTop: currentAccountScrollPosition }, 600);
     }
   }
 
@@ -310,7 +310,7 @@
     var element = document.getElementById("qb-items");
     var liParent = "";
     jsonData.forEach(function (data) {
-      if (!data.item_name && !data.item_id) return;
+      if (!data.item_name && !data.item_id && parseInt(data.ext_status)===0) return;
       liParent +=
         '<tr><td width="45%" style="padding-left: ' +
         data.item_level * 15 +
@@ -344,7 +344,7 @@
     var element = document.getElementById("qb-accounts");
     var liParent = "";
     jsonData.forEach(function (data) {
-      if (!data.account_desc && !data.account_id) return;
+      if (!data.account_desc && !data.account_id && parseInt(data.ext_status)===0) return;
       liParent +=
         '<tr><td width="45%" style="padding-left: ' +
         data.account_level * 15 +
