@@ -523,19 +523,23 @@ function getItemAddRequest() {
         request.readyState === XMLHttpRequest.DONE &&
         request.status === 200
       ) {
-        var data = JSON.parse(request.response);
-        if (data.error === 0) {
-          var xml_response = execute_qbxml_request(data.xml_response);
-          postItemAddResponse(xml_response)
-            .then(function (response) {
-              loop(i + 1, length);
-            })
-            .catch(function (error) {
-              window.alert(error);
-              error = true;
-            });
+        var response = JSON.parse(request.response);
+        if (response.error_code === 0) {
+          var xml_request = execute_qbxml_request(response.data.xml_response);
+          postItemAddResponse(xml_request, job_id, itemsToAdd[i].id).then(
+            function (postItemReeponse) {
+              if (postItemReeponse.error_code === 0) {
+                loop(i + 1, length);
+              } else {
+                window.alert(postItemReeponse.error_message);
+                error = true;
+              }
+            }
+          );
         } else {
-          var message = data.error_message ? data.error_message : "Failed !!";
+          var message = response.error_message
+            ? response.error_message
+            : "Failed !!";
           window.alert(message);
           error = true;
         }
@@ -551,28 +555,33 @@ function execute_qbxml_request(str) {
 }
 
 function postItemAddResponse() {
-  return new Promise(function (resolve, reject) {
-    if (!arguments[0]) reject("Failed!!, no item to add");
-    var xmlReponse = arguments[0];
-    var requests = new XMLHttpRequest();
-    var params = new FormData();
-    params.append("req", "postItemAddResponse");
-    params.append("xml_response", encodeURIComponent(xmlReponse));
-    requests.open(
-      "POST",
-      "https://dev-testd.buildstar.com/app/sync/category_map_rpc.cfm",
-      false
-    );
-    requests.onload = function () {
-      resolve(requests.response);
-    };
-    requests.onerror = function () {
-      reject("Failed !!");
-    };
-    requests.setRequestHeader(
-      "Content-Type",
-      "application/x-www-form-urlencoded"
-    );
-    requests.send(params);
-  });
+  if (!arguments) reject("Failed!!, no item to add");
+  var deferred = jQuery.Deferred();
+  var xmlReponse = arguments[0];
+  var job_id = arguments[1];
+  var cat_nbr = arguments[2];
+  var requests = new XMLHttpRequest();
+  requests.open(
+    "GET",
+    "https://dev-testd.buildstar.com/app/sync/category_map_rpc.cfm?req=postItemAddResp&xml_response=" +
+      encodeURIComponent(xmlReponse) +
+      "&job_id=" +
+      job_id +
+      "&cat_nbr=" +
+      cat_nbr,
+    false
+  );
+  requests.onload = function () {
+    deferred.resolve(requests.response);
+  };
+  requests.onerror = function () {
+    deferred.resolve({ error_code: 1, error_message: "Failed !!" });
+  };
+  requests.setRequestHeader(
+    "Content-Type",
+    "application/x-www-form-urlencoded"
+  );
+  requests.send();
+
+  return deferred.promise();
 }
