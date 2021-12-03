@@ -1,6 +1,8 @@
 "use strict";
 var quickBookItems = [];
 var quickBookAccounts = [];
+var itemScrollPosition;
+var accountScrollPosition;
 $(function () {
   var lastChecked = null;
   var dragging = false;
@@ -113,7 +115,7 @@ $(function () {
       });
       content += "</tbody></table>";
       content +=
-        '<button class="modal-toggle" id="deleteMappedItems">Ok</button>';
+        '<div class="okBtn"><button class="modal-toggle" id="deleteMappedItems">Ok</button></div>';
       $(".modal-heading").html(header);
       $(".modal-content").html(content);
       $(".modal")
@@ -154,7 +156,25 @@ $(function () {
     getItems();
     getCategories();
   });
+  $("#items").scroll(function () {
+    itemScrollPosition = $("#items").scrollTop();
+  });
+  $("#accounts").scroll(function () {
+    accountScrollPosition = $("#accounts").scrollTop();
+  });
 });
+
+function itemScrollPosition() {
+  if (itemScrollPosition) {
+    $("#items").animate({ scrollTop: itemScrollPosition }, 600);
+  }
+}
+
+function accountScrollPosition() {
+  if (accountScrollPosition) {
+    $("#accounts").animate({ scrollTop: accountScrollPosition }, 600);
+  }
+}
 
 function unMapItems() {
   $.when($(".modal").removeClass("is-visible")).then(function () {
@@ -247,6 +267,8 @@ function startBuildCategory() {
   });
   element.innerHTML = liParent;
   showActionButtons();
+  itemScrollPosition();
+  accountScrollPosition();
 }
 
 function selectedCategoryItems() {
@@ -268,7 +290,8 @@ function selectedCategoryItemObjects() {
     if (
       $(value).attr("class") === "active" &&
       $(value).find("td:first").data("id") &&
-      $(value).find("td:first").data("level")
+      $(value).find("td:first").data("level") &&
+      !$(value).children("td:eq(2)").attr("data-qb-id")
     ) {
       selectedItemObjects.push({
         id: $(value).find("td:first").data("id"),
@@ -525,17 +548,23 @@ function getItemAddRequest() {
       ) {
         var response = JSON.parse(request.response);
         if (response.error_code === 0) {
-          var xml_request = execute_qbxml_request(response.data.xml_response);
-          postItemAddResponse(xml_request, job_id, itemsToAdd[i].id).then(
-            function (postItemReeponse) {
-              if (postItemReeponse.error_code === 0) {
-                loop(i + 1, length);
-              } else {
-                window.alert(postItemReeponse.error_message);
-                error = true;
+          var xml_request = execute_qbxml_request(response.data.xml_request);
+          if (xml_request) {
+            postItemAddResponse(xml_request, job_id, itemsToAdd[i].id).then(
+              function (postItemResponse) {
+                var postResponse = JSON.parse(postItemResponse);
+                if (postResponse.error_code === 0) {
+                  loop(i + 1, length);
+                } else {
+                  window.alert(postResponse.error_message);
+                  error = true;
+                }
               }
-            }
-          );
+            );
+          } else {
+            window.alert("Failed !!");
+            error = true;
+          }
         } else {
           var message = response.error_message
             ? response.error_message
@@ -557,18 +586,14 @@ function execute_qbxml_request(str) {
 function postItemAddResponse() {
   if (!arguments) reject("Failed!!, no item to add");
   var deferred = jQuery.Deferred();
-  var xmlReponse = arguments[0];
-  var job_id = arguments[1];
-  var cat_nbr = arguments[2];
+  var params = new FormData();
+  params.append("xml_response", arguments[0]);
+  params.append("job_id", encodeURIComponent(arguments[1]));
+  params.append("cat_nbr", encodeURIComponent(arguments[2]));
   var requests = new XMLHttpRequest();
   requests.open(
     "GET",
-    "https://dev-testd.buildstar.com/app/sync/category_map_rpc.cfm?req=postItemAddResp&xml_response=" +
-      encodeURIComponent(xmlReponse) +
-      "&job_id=" +
-      job_id +
-      "&cat_nbr=" +
-      cat_nbr,
+    "https://dev-testd.buildstar.com/app/sync/category_map_rpc.cfm?req=postItemAddResp",
     false
   );
   requests.onload = function () {
@@ -577,11 +602,6 @@ function postItemAddResponse() {
   requests.onerror = function () {
     deferred.resolve({ error_code: 1, error_message: "Failed !!" });
   };
-  requests.setRequestHeader(
-    "Content-Type",
-    "application/x-www-form-urlencoded"
-  );
-  requests.send();
-
+  requests.send(params);
   return deferred.promise();
 }

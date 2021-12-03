@@ -84,7 +84,19 @@
 }
 
 .modal-header,
-.modal-content {
+.modal-content > table{
+  padding: 1em;
+}
+
+.modal-content > table {
+  display: block;
+  max-height: 350px;
+  overflow-x: auto;
+}
+
+.okBtn {
+  display: flex;
+  justify-content: right;
   padding: 1em;
 }
 
