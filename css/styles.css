@@ -10,7 +10,7 @@
   background-color: #eceaea;
   background-size: cover;
   z-index: 10000000;
-  opacity: 0.7;
+  opacity: 0.8;
   display: none;
 }
 #loader > div {
@@ -27,6 +27,15 @@
   -webkit-animation: spin 0.8s linear infinite;
   animation: spin 0.8s linear infinite;
 }
+#loaderMsg {
+  position: absolute;
+  left: 40%;
+  top: 50%;
+  font-size: 15pt;
+  color: rgb(156, 54, 54);
+  font-weight: 600;
+}
+
 
 .modal {
   position: absolute;

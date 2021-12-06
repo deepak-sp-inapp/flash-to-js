@@ -534,49 +534,54 @@
       if (i >= length || error) {
         getCategories();
         getItems();
+        $("#loaderMsg").text('');
         $("#loader").fadeOut(200);
         return;
       }
-      var url =
-        "https://<cfoutput>#http_server#</cfoutput>/app/sync/category_map_rpc.cfm?req=getItemAddReq&job_id=" +
-        job_id +
-        "&cat_nbr=" +
-        itemsToAdd[i].id;
-      request.open("GET", url);
-      request.onreadystatechange = function () {
-        if (
-          request.readyState === XMLHttpRequest.DONE &&
-          request.status === 200
-        ) {
-          var response = JSON.parse(request.response);
-          if (response.error_code === 0) {
-            var xml_request = execute_qbxml_request(response.data.xml_request);
-            if (xml_request) {
-              postItemAddResponse(xml_request, job_id, itemsToAdd[i].id).then(
-                function (postItemResponse) {
-                  var postResponse = JSON.parse(postItemResponse);
-                  if (postResponse.error_code === 0) {
-                    loop(i + 1, length);
-                  } else {
-                    window.alert(postResponse.error_message);
-                    error = true;
+      var loaderMsg =
+      "Mapping " + (i + 1) + " of " + mappedItems.length + " items";
+      $.when($("#loaderMsg").text(loaderMsg)).then(function () {    
+        var url =
+          "https://<cfoutput>#http_server#</cfoutput>/app/sync/category_map_rpc.cfm?req=getItemAddReq&job_id=" +
+          job_id +
+          "&cat_nbr=" +
+          itemsToAdd[i].id;
+        request.open("GET", url);
+        request.onreadystatechange = function () {
+          if (
+            request.readyState === XMLHttpRequest.DONE &&
+            request.status === 200
+          ) {
+            var response = JSON.parse(request.response);
+            if (response.error_code === 0) {
+              var xml_request = execute_qbxml_request(response.data.xml_request);
+              if (xml_request) {
+                postItemAddResponse(xml_request, job_id, itemsToAdd[i].id).then(
+                  function (postItemResponse) {
+                    var postResponse = JSON.parse(postItemResponse);
+                    if (postResponse.error_code === 0) {
+                      loop(i + 1, length);
+                    } else {
+                      window.alert(postResponse.error_message);
+                      error = true;
+                    }
                   }
-                }
-              );
+                );
+              } else {
+                window.alert("Failed !!");
+                error = true;
+              }
             } else {
-              window.alert("Failed !!");
+              var message = response.error_message
+                ? response.error_message
+                : "Failed !!";
+              window.alert(message);
               error = true;
             }
-          } else {
-            var message = response.error_message
-              ? response.error_message
-              : "Failed !!";
-            window.alert(message);
-            error = true;
           }
-        }
-      };
-      request.send();
+        };
+        request.send();
+      });
     })(0, itemsToAdd.length);
   }
 
@@ -586,8 +591,8 @@
   }
 
   function postItemAddResponse() {
-    if (!arguments) reject("Failed!!, no item to add");
     var deferred = jQuery.Deferred();
+    if (!arguments) deferred.resolve({ error_code: 1, error_message: "Failed!!, no item to add" });
     var params = new FormData();
     params.append("req", "postItemAddResp");
     params.append("xml_response", arguments[0]);
