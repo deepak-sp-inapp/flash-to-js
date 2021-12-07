@@ -310,7 +310,7 @@
     var element = document.getElementById("qb-items");
     var liParent = "";
     jsonData.forEach(function (data) {
-      if (!data.item_name && !data.item_id && parseInt(data.ext_status)===0) return;
+      if ((!data.item_name && !data.item_id)||parseInt(data.ext_status)===0) return;
       liParent +=
         '<tr><td width="45%" style="padding-left: ' +
         data.item_level * 15 +
@@ -344,7 +344,7 @@
     var element = document.getElementById("qb-accounts");
     var liParent = "";
     jsonData.forEach(function (data) {
-      if (!data.account_desc && !data.account_id && parseInt(data.ext_status)===0) return;
+      if ((!data.account_desc && !data.account_id) || parseInt(data.ext_status)===0) return;
       liParent +=
         '<tr><td width="45%" style="padding-left: ' +
         data.account_level * 15 +
@@ -386,7 +386,7 @@
   }
 
   function showActionButtons() {
-    if ($("#tree tr").hasClass("active")) {
+    if ($("#tree tr").hasClass("active") && !$("#qb-accounts tr").hasClass("active")) {
       $("#add-items").css("visibility", "visible");
     } else {
       $("#add-items").css("visibility", "hidden");
@@ -451,7 +451,7 @@
     };
     xhr.open(
       "GET",
-      "https://<cfoutput>#http_server#</cfoutput>/app/sync/category_map_rpc.cfm?req=getAccounts",
+      "https://<cfoutput>#http_server#</cfoutput>/app/sync/category_map_rpc.cfm?req=getAccounts&"+new Date().getTime(),
       true
     );
     xhr.onerror = function (e) {
@@ -516,7 +516,7 @@
     };
     xhr.open(
       "GET",
-      "https://<cfoutput>#http_server#</cfoutput>/app/sync/category_map_rpc.cfm?req=getItems",
+      "https://<cfoutput>#http_server#</cfoutput>/app/sync/category_map_rpc.cfm?req=getItems&"+new Date().getTime(),
       true
     );
     xhr.onerror = function (e) {
@@ -534,12 +534,10 @@
       if (i >= length || error) {
         getCategories();
         getItems();
-        $("#loaderMsg").text('');
-        $("#loader").fadeOut(200);
         return;
       }
       var loaderMsg =
-      "Mapping " + (i + 1) + " of " + mappedItems.length + " items";
+      "Adding " + (i + 1) + " of " + itemsToAdd.length + " items";
       $.when($("#loaderMsg").text(loaderMsg)).then(function () {    
         var url =
           "https://<cfoutput>#http_server#</cfoutput>/app/sync/category_map_rpc.cfm?req=getItemAddReq&job_id=" +
@@ -559,9 +557,7 @@
                 postItemAddResponse(xml_request, job_id, itemsToAdd[i].id).then(
                   function (postItemResponse) {
                     var postResponse = JSON.parse(postItemResponse);
-                    if (postResponse.error_code === 0) {
-                      loop(i + 1, length);
-                    } else {
+                    if (postResponse.error_code !== 0) {
                       window.alert(postResponse.error_message);
                       error = true;
                     }
@@ -571,12 +567,14 @@
                 window.alert("Failed !!");
                 error = true;
               }
+              loop(i + 1, length);
             } else {
               var message = response.error_message
                 ? response.error_message
                 : "Failed !!";
               window.alert(message);
               error = true;
+              loop(i + 1, length);
             }
           }
         };
