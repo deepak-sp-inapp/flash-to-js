@@ -223,7 +223,7 @@
       if (data.item_id) {
         var mappedItem = quickBookItems
           .filter(function (item) {
-            return item.item_id == data.item_id;
+            return (item.item_id == data.item_id && item.ext_status !== 0);
           })
           .map(function (item) {
             return { id: item.item_id, name: item.item_name, type: "item" };
@@ -232,7 +232,7 @@
       if (data.account_id) {
         var mappedItem = quickBookAccounts
           .filter(function (item) {
-            return item.account_id == data.account_id;
+            return (item.account_id == data.account_id && item.ext_status !== 0);
           })
           .map(function (item) {
             return {
@@ -256,7 +256,7 @@
         '</span></td><td width="10%" class="center">' +
         (mappedItem ? initCap(mappedItem.type) : "") +
         '</td><td style="padding-left: ' +
-        data.cat_level * 15 +
+        (data.cat_level-1) * 15 +
         'px" width="45%" data-qb-id="' +
         (mappedItem && mappedItem.id ? mappedItem.id : "") +
         '" data-id="' +
@@ -292,12 +292,10 @@
       if (
         $(value).attr("class") === "active" &&
         $(value).find("td:first").data("id") &&
-        $(value).find("td:first").data("level") &&
         !$(value).children("td:eq(2)").attr("data-qb-id")
       ) {
         selectedItemObjects.push({
           id: $(value).find("td:first").data("id"),
-          level: $(value).find("td:first").data("level"),
         });
       }
     });
@@ -532,8 +530,9 @@
     var error = false;
     (function loop(i, length) {
       if (i >= length || error) {
-        getCategories();
         getItems();
+        getCategories();
+        $("#loaderMsg").text("");
         return;
       }
       $.when($("#loaderMsg").text("Requesting " + (i + 1) + " of " + itemsToAdd.length + " items")).then(function () {
@@ -541,7 +540,7 @@
           "https://<cfoutput>#http_server#</cfoutput>/app/sync/category_map_rpc.cfm?req=getItemAddReq&job_id=" +
           job_id +
           "&cat_nbr=" +
-          itemsToAdd[i].id;
+          encodeURIComponent(itemsToAdd[i].id);
         request.open("GET", url);
         request.onreadystatechange = function () {
           if (
@@ -560,14 +559,16 @@
                               window.alert(postResponse.error_message);
                               error = true;
                            }
+                           loop(i + 1, length);
                         }
                      );
                   });                
               } else {
                 window.alert("Failed !!");
                 error = true;
+                loop(i + 1, length);
               }
-              loop(i + 1, length);
+              
             } else {
               var message = response.error_message
                 ? response.error_message
