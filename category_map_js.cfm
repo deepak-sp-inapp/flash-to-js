@@ -313,7 +313,7 @@
       if ((!data.item_name && !data.item_id)||parseInt(data.ext_status)===0) return;
       liParent +=
         '<tr><td width="45%" style="padding-left: ' +
-        data.item_level * 15 +
+        (data.item_level - 1) * 15 +
         'px" data-id="' +
         data.item_id +
         '" data-title="' +
@@ -347,7 +347,7 @@
       if ((!data.account_desc && !data.account_id) || parseInt(data.ext_status)===0) return;
       liParent +=
         '<tr><td width="45%" style="padding-left: ' +
-        data.account_level * 15 +
+        (data.item_level - 1) * 15 +
         'px" data-id="' +
         data.account_id +
         '" data-title="' +
@@ -581,11 +581,6 @@
         request.send();
       });
     })(0, itemsToAdd.length);
-  }
-
-  function execute_qbxml_request(str) {
-    var response = document.c.xQBxmlctl.qbXML(str);
-    return response;
   }
 
   function postItemAddResponse() {
