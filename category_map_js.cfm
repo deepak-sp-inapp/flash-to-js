@@ -449,7 +449,7 @@
     };
     xhr.open(
       "GET",
-      "https://<cfoutput>#http_server#</cfoutput>/app/sync/category_map_rpc.cfm?req=getAccounts&"+new Date().getTime(),
+      "https://<cfoutput>#http_server#</cfoutput>/app/sync/category_map_rpc.cfm?req=getAccounts&ts="+Math.floor(Math.random() * 9999),
       true
     );
     xhr.onerror = function (e) {
@@ -482,8 +482,8 @@
       "GET",
       "https://<cfoutput>#http_server#</cfoutput>/app/sync/category_map_rpc.cfm?req=getCategories&job_id=" +
         job_id +
-        "&" +
-        new Date().getTime(),
+        "&ts=" +
+        Math.floor(Math.random() * 9999),
       true
     );
     xhr.onerror = function (e) {
@@ -514,7 +514,7 @@
     };
     xhr.open(
       "GET",
-      "https://<cfoutput>#http_server#</cfoutput>/app/sync/category_map_rpc.cfm?req=getItems&"+new Date().getTime(),
+      "https://<cfoutput>#http_server#</cfoutput>/app/sync/category_map_rpc.cfm?req=getItems&ts="+Math.floor(Math.random() * 9999),
       true
     );
     xhr.onerror = function (e) {
