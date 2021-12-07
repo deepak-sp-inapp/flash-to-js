@@ -536,7 +536,7 @@
         getItems();
         return;
       }
-      $.when($("#loaderMsg").text("Requesting to add " + (i + 1) + " of " + itemsToAdd.length + " items")).then(function () {
+      $.when($("#loaderMsg").text("Requesting " + (i + 1) + " of " + itemsToAdd.length + " items")).then(function () {
         var url =
           "https://<cfoutput>#http_server#</cfoutput>/app/sync/category_map_rpc.cfm?req=getItemAddReq&job_id=" +
           job_id +
