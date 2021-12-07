@@ -238,7 +238,7 @@
             return {
               id: item.account_id,
               name: item.account_desc,
-              type: "account",
+              type: "acct",
             };
           })[0];
       }
@@ -536,9 +536,7 @@
         getItems();
         return;
       }
-      var loaderMsg =
-      "Adding " + (i + 1) + " of " + itemsToAdd.length + " items";
-      $.when($("#loaderMsg").text(loaderMsg)).then(function () {    
+      $.when($("#loaderMsg").text("Requesting to add " + (i + 1) + " of " + itemsToAdd.length + " items")).then(function () {
         var url =
           "https://<cfoutput>#http_server#</cfoutput>/app/sync/category_map_rpc.cfm?req=getItemAddReq&job_id=" +
           job_id +
@@ -554,15 +552,17 @@
             if (response.error_code === 0) {
               var xml_request = execute_qbxml_request(response.data.xml_request);
               if (xml_request) {
-                postItemAddResponse(xml_request, job_id, itemsToAdd[i].id).then(
-                  function (postItemResponse) {
-                    var postResponse = JSON.parse(postItemResponse);
-                    if (postResponse.error_code !== 0) {
-                      window.alert(postResponse.error_message);
-                      error = true;
-                    }
-                  }
-                );
+                  $.when($("#loaderMsg").text("Adding " + (i + 1) + " of " + itemsToAdd.length + " items")).then(function () {
+                     postItemAddResponse(xml_request, job_id, itemsToAdd[i].id).then(
+                        function (postItemResponse) {
+                           var postResponse = JSON.parse(postItemResponse);
+                           if (postResponse.error_code !== 0) {
+                              window.alert(postResponse.error_message);
+                              error = true;
+                           }
+                        }
+                     );
+                  });                
               } else {
                 window.alert("Failed !!");
                 error = true;
