@@ -440,7 +440,6 @@
 
   function getAccounts() {
     var xhr = new XMLHttpRequest();
-    var cbs = new Date().getTime() + Math.floor(Math.random() * 9999);
     xhr.onreadystatechange = function () {
       if (xhr.readyState == 4 && xhr.status == 200) {
         if (xhr.response) {
@@ -460,7 +459,7 @@
     };
     xhr.open(
       "GET",
-      "https://<cfoutput>#http_server#</cfoutput>/app/sync/category_map_rpc.cfm?req=getAccounts&ts="+cbs,
+      "https://<cfoutput>#http_server#</cfoutput>/app/sync/category_map_rpc.cfm?req=getAccounts",
       true
     );
     xhr.onerror = function (e) {
@@ -472,7 +471,6 @@
   function getCategories() {
     var job_id = $("#new_template_id").val();
     var xhr = new XMLHttpRequest();
-    var cbs = new Date().getTime() + Math.floor(Math.random() * 9999);
     xhr.onreadystatechange = function () {
       if (xhr.readyState == 4 && xhr.status == 200) {
         if (xhr.response) {
@@ -492,7 +490,7 @@
     };
     xhr.open(
       "GET",
-      "https://<cfoutput>#http_server#</cfoutput>/app/sync/category_map_rpc.cfm?req=getCategories&job_id="+job_id+"&ts="+cbs,
+      "https://<cfoutput>#http_server#</cfoutput>/app/sync/category_map_rpc.cfm?req=getCategories&job_id="+job_id,
       true
     );
     xhr.onerror = function (e) {
@@ -504,7 +502,6 @@
 
   function getItems() {
     var xhr = new XMLHttpRequest();
-    var cbs = new Date().getTime() + Math.floor(Math.random() * 9999);
     xhr.onreadystatechange = function () {
       if (xhr.readyState == 4 && xhr.status == 200) {
         if (xhr.response) {
@@ -524,7 +521,7 @@
     };
     xhr.open(
       "GET",
-      "https://<cfoutput>#http_server#</cfoutput>/app/sync/category_map_rpc.cfm?req=getItems&ts="+cbs,
+      "https://<cfoutput>#http_server#</cfoutput>/app/sync/category_map_rpc.cfm?req=getItems"s,
       true
     );
     xhr.onerror = function (e) {
