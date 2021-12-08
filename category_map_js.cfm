@@ -73,30 +73,32 @@
           itemType === "items"
             ? selectedQuickBookItems()
             : selectedQuickBookAccounts();
-        var requests = [];
-        for (var i = 0; i < mappedItems.length; i++) {
-          var params = new FormData();
-          var item_type = itemType === "items" ? "item_id" : "account_id";
-          params.append("req", "setMapping");
-          params.append("job_id", job_id);
-          params.append("cat_nbr", mappedItems[i]);
-          if (qbItems.length > 1) {
-            params.append(item_type, qbItems[i]);
-          } else {
-            params.append(item_type, qbItems[0]);
-          }
-          requests[i] = new XMLHttpRequest();
-          requests[i].open(
-            "POST",
-            "https://<cfoutput>#http_server#</cfoutput>/app/sync/category_map_rpc.cfm",
-            false
-          );
-          requests[i].onload = function () {
-            console.log(requests[i].response);
-          };
-          requests[i].send(params);
-        }
-        getCategories();
+         (function loop(i, length) {
+            if (i >= length) {
+               getCategories();
+               return;
+            }
+            var requests = new XMLHttpRequest();
+            var params = new FormData();
+            var item_type = itemType === "items" ? "item_id" : "account_id";
+            params.append("req", "setMapping");
+            params.append("job_id", job_id);
+            params.append("cat_nbr", mappedItems[i]);
+            if (qbItems.length > 1) {
+               params.append(item_type, qbItems[i]);
+            } else {
+               params.append(item_type, qbItems[0]);
+            }
+            requests.open(
+               "POST",
+               "https://<cfoutput>#http_server#</cfoutput>/app/sync/category_map_rpc.cfm",
+               false
+            );
+            requests.onload = function () {
+               loop(i + 1, length);
+            };
+            requests.send(params);
+         })(0, mappedItems.length);
       });
     });
 
@@ -182,27 +184,29 @@
     $.when($(".modal").removeClass("is-visible")).then(function () {
       var mappedItems = selectedMappedItems();
       var itemType = $("input[name='items']:checked").val();
-      var requests = [];
       var job_id = $("#new_template_id").val();
-      for (var i = 0; i < mappedItems.length; i++) {
-        var params = new FormData();
-        var item_type = itemType === "items" ? "item_id" : "account_id";
-        params.append("req", "setMapping");
-        params.append("job_id", job_id);
-        params.append("cat_nbr", mappedItems[i]);
-        params.append(item_type, "");
-        requests[i] = new XMLHttpRequest();
-        requests[i].open(
-          "POST",
-          "https://<cfoutput>#http_server#</cfoutput>/app/sync/category_map_rpc.cfm",
-          false
-        );
-        requests[i].onload = function () {
-          console.log(requests[i].response);
-        };
-        requests[i].send(params);
-      }
-      getCategories();
+      (function loop(i, length) {
+         if (i >= length) {
+            getCategories();
+            return;
+         }
+         var requests = new XMLHttpRequest();
+         var params = new FormData();
+         var item_type = itemType === "items" ? "item_id" : "account_id";
+         params.append("req", "setMapping");
+         params.append("job_id", job_id);
+         params.append("cat_nbr", mappedItems[i]);
+         params.append(item_type, "");
+         requests.open(
+            "POST",
+            "https://<cfoutput>#http_server#</cfoutput>/app/sync/category_map_rpc.cfm",
+            false
+         );
+         requests.onload = function () {
+            loop(i + 1, length);
+         };
+         requests.send(params);
+      })(0, mappedItems.length);
     });
   }
 
@@ -226,7 +230,12 @@
             return (item.item_id == data.item_id && item.ext_status !== 0);
           })
           .map(function (item) {
-            return { id: item.item_id, name: item.item_name, type: "item" };
+            return { 
+               id: item.item_id, 
+               name: item.item_name, 
+               type: "item",
+               level: item.item_level,
+            };
           })[0];
       }
       if (data.account_id) {
@@ -239,6 +248,7 @@
               id: item.account_id,
               name: item.account_desc,
               type: "acct",
+              level: item.account_level,
             };
           })[0];
       }
@@ -256,7 +266,7 @@
         '</span></td><td width="10%" class="center">' +
         (mappedItem ? initCap(mappedItem.type) : "") +
         '</td><td style="padding-left: ' +
-        (data.cat_level-1) * 15 +
+        (mappedItem && mappedItem.level ? (parseInt(mappedItem.level)-1) * 15 : 0) +
         'px" width="45%" data-qb-id="' +
         (mappedItem && mappedItem.id ? mappedItem.id : "") +
         '" data-id="' +
@@ -430,6 +440,7 @@
 
   function getAccounts() {
     var xhr = new XMLHttpRequest();
+    var cbs = new Date().getTime() + Math.floor(Math.random() * 9999);
     xhr.onreadystatechange = function () {
       if (xhr.readyState == 4 && xhr.status == 200) {
         if (xhr.response) {
@@ -449,7 +460,7 @@
     };
     xhr.open(
       "GET",
-      "https://<cfoutput>#http_server#</cfoutput>/app/sync/category_map_rpc.cfm?req=getAccounts&ts="+Math.floor(Math.random() * 9999),
+      "https://<cfoutput>#http_server#</cfoutput>/app/sync/category_map_rpc.cfm?req=getAccounts&ts="+cbs,
       true
     );
     xhr.onerror = function (e) {
@@ -461,6 +472,7 @@
   function getCategories() {
     var job_id = $("#new_template_id").val();
     var xhr = new XMLHttpRequest();
+    var cbs = new Date().getTime() + Math.floor(Math.random() * 9999);
     xhr.onreadystatechange = function () {
       if (xhr.readyState == 4 && xhr.status == 200) {
         if (xhr.response) {
@@ -480,10 +492,7 @@
     };
     xhr.open(
       "GET",
-      "https://<cfoutput>#http_server#</cfoutput>/app/sync/category_map_rpc.cfm?req=getCategories&job_id=" +
-        job_id +
-        "&ts=" +
-        Math.floor(Math.random() * 9999),
+      "https://<cfoutput>#http_server#</cfoutput>/app/sync/category_map_rpc.cfm?req=getCategories&job_id="+job_id+"&ts="+cbs,
       true
     );
     xhr.onerror = function (e) {
@@ -495,6 +504,7 @@
 
   function getItems() {
     var xhr = new XMLHttpRequest();
+    var cbs = new Date().getTime() + Math.floor(Math.random() * 9999);
     xhr.onreadystatechange = function () {
       if (xhr.readyState == 4 && xhr.status == 200) {
         if (xhr.response) {
@@ -514,7 +524,7 @@
     };
     xhr.open(
       "GET",
-      "https://<cfoutput>#http_server#</cfoutput>/app/sync/category_map_rpc.cfm?req=getItems&ts="+Math.floor(Math.random() * 9999),
+      "https://<cfoutput>#http_server#</cfoutput>/app/sync/category_map_rpc.cfm?req=getItems&ts="+cbs,
       true
     );
     xhr.onerror = function (e) {
