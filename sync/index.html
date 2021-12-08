@@ -6,11 +6,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Flash to JS</title>
     <link rel="stylesheet" href="../css/styles.css?v=1.1.5" />
+    <style>
+      * {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 9pt;
+      }
+    </style>
   </head>
+
   <body>
     <h1>Map Template Categories / Cost Items</h1>
     <div class="map-container" onselectstart="return false;">
-      <div id="loader"><div></div><span id="loaderMsg"></span></div>
+      <div id="loader">
+        <div></div>
+        <span id="loaderMsg"></span>
+      </div>
       <div class="build-container">
         <div class="sticky">
           <table>
@@ -31,13 +41,25 @@
       </div>
       <div class="action-buttons">
         <span id="add-items"
-          ><img src="../images/arrow-right.png" alt="add" class="pointer" title="add items"
+          ><img
+            src="../images/arrow-right.png"
+            alt="add"
+            class="pointer"
+            title="add items"
         /></span>
         <span id="map-items"
-          ><img src="../images/double-arrow.png" alt="map" class="pointer" title="map items"
+          ><img
+            src="../images/double-arrow.png"
+            alt="map"
+            class="pointer"
+            title="map items"
         /></span>
         <span id="unmap-items"
-          ><img src="../images/stop.png" alt="unmap" class="pointer" title="unmap items"
+          ><img
+            src="../images/stop.png"
+            alt="unmap"
+            class="pointer"
+            title="unmap items"
         /></span>
       </div>
       <div class="quick-book">
@@ -48,13 +70,23 @@
                 <th width="20%">QuickBooks</th>
                 <th width="25%">
                   <label for="qbItems" class="pointer">
-                    <input type="radio" name="items" value="items" id="qbItems" />
+                    <input
+                      type="radio"
+                      name="items"
+                      value="items"
+                      id="qbItems"
+                    />
                     Items
                   </label>
                 </th>
                 <th width="25%">
                   <label for="qbAccounts" class="pointer">
-                    <input type="radio" name="items" value="accounts" id="qbAccounts" />
+                    <input
+                      type="radio"
+                      name="items"
+                      value="accounts"
+                      id="qbAccounts"
+                    />
                     Accounts
                   </label>
                 </th>
@@ -70,8 +102,8 @@
         </div>
       </div>
     </div>
+
     <div class="modal">
-      <div class="modal-overlay modal-toggle"></div>
       <div class="modal-wrapper modal-transition">
         <div class="modal-header">
           <button class="modal-close modal-toggle pointer">X</button>
@@ -82,6 +114,7 @@
         </div>
       </div>
     </div>
+
     <script src="../js/jquery.min.js"></script>
     <script src="../js/map_template.js?v=1.1.5"></script>
   </body>

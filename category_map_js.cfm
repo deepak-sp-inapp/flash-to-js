@@ -521,7 +521,7 @@
     };
     xhr.open(
       "GET",
-      "https://<cfoutput>#http_server#</cfoutput>/app/sync/category_map_rpc.cfm?req=getItems"s,
+      "https://<cfoutput>#http_server#</cfoutput>/app/sync/category_map_rpc.cfm?req=getItems",
       true
     );
     xhr.onerror = function (e) {
