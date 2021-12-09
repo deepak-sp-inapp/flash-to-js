@@ -32,31 +32,30 @@
       showActionButtons();
     });
 
-    ["#tree tr", "#qb-items tr, #qb-accounts tr"].forEach(function (
+   ["#tree tr", "#qb-items tr, #qb-accounts tr"].forEach(function (
       currentElement
-    ) {
+   ) {
       $("table").on("click", currentElement, function (e) {
-        var $element = $(currentElement);
-        if (!lastChecked) {
-          lastChecked = this;
-        }
-        if (e.shiftKey) {
-          var start = $element.index(this);
-          var end = $element.index(lastChecked);
-          $element
-            .slice(Math.min(start, end), Math.max(start, end) + 1)
-            .removeClass("active")
-            .addClass("active");
-        } else if (e.ctrlKey) {
-          $(this).toggleClass("active");
-        } else {
-          $element.removeClass("active");
-          $(this).toggleClass("active");
-        }
-        lastChecked = this;
-        showActionButtons();
+         var $element = $(currentElement);
+         if (!lastChecked) {
+            lastChecked = this;
+         }
+         if (e.shiftKey) {
+            var start = $element.index(this);
+            var end = $element.index(lastChecked);
+            $element
+               .slice(Math.min(start, end), Math.max(start, end) + 1)
+               .removeClass("active")
+               .addClass("active");
+         }
+         else {
+            $element.removeClass("active");
+            $(this).toggleClass("active");
+         }
+         lastChecked = this;
+         showActionButtons();
       });
-    });
+   });
 
     $("#add-items").click(function (e) {
       $.when($("#loader").css("display", "block")).then(function () {
@@ -75,6 +74,7 @@
             : selectedQuickBookAccounts();
          (function loop(i, length) {
             if (i >= length) {
+               clearSelection();
                getCategories();
                return;
             }
@@ -110,10 +110,10 @@
         $("#tree tr").each(function (index, value) {
           if (
             $(value).attr("class") === "active" &&
-            $(value).children("td:eq(2)").attr("data-qb-id")
+            $(value).children("td").attr("data-id")
           ) {
             content +=
-              "<tr>" + $(value).children("td:eq(2)").get(0).outerHTML + "</tr>";
+              "<tr>" + $(value).children("td").get(0).outerHTML + "</tr>";
           }
         });
         content += "</tbody></table>";
@@ -187,6 +187,7 @@
       var job_id = $("#new_template_id").val();
       (function loop(i, length) {
          if (i >= length) {
+            clearSelection();
             getCategories();
             return;
          }
@@ -216,6 +217,10 @@
       return string.charAt(0).toUpperCase() + string.substring(1);
     }
   }
+
+   function clearSelection() {
+      $('tr').removeClass("active");
+   }
 
   function startBuildCategory() {
     if (!arguments[0]) return;
@@ -301,8 +306,7 @@
     $("#tree tr").each(function (index, value) {
       if (
         $(value).attr("class") === "active" &&
-        $(value).find("td:first").data("id") &&
-        !$(value).children("td:eq(2)").attr("data-qb-id")
+        $(value).find("td:first").data("id")
       ) {
         selectedItemObjects.push({
           id: $(value).find("td:first").data("id"),
@@ -394,7 +398,7 @@
   }
 
   function showActionButtons() {
-    if ($("#tree tr").hasClass("active") && !$("#qb-accounts tr").hasClass("active")) {
+    if ($("#items tr").hasClass("active") && !$("#accounts tr").hasClass("active")) {
       $("#add-items").css("visibility", "visible");
     } else {
       $("#add-items").css("visibility", "hidden");
@@ -537,6 +541,7 @@
     var error = false;
     (function loop(i, length) {
       if (i >= length || error) {
+        clearSelection();
         getItems();
         getCategories();
         $("#loaderMsg").text("");
@@ -551,39 +556,36 @@
         request.open("GET", url);
         request.onreadystatechange = function () {
           if (
-            request.readyState === XMLHttpRequest.DONE &&
-            request.status === 200
-          ) {
-            var response = JSON.parse(request.response);
-            if (response.error_code === 0) {
-              var xml_request = execute_qbxml_request(response.data.xml_request);
-              if (xml_request) {
-                  $.when($("#loaderMsg").text("Adding " + (i + 1) + " of " + itemsToAdd.length + " items")).then(function () {
-                     postItemAddResponse(xml_request, job_id, itemsToAdd[i].id).then(
-                        function (postItemResponse) {
-                           var postResponse = JSON.parse(postItemResponse);
-                           if (postResponse.error_code !== 0) {
-                              window.alert(postResponse.error_message);
-                              error = true;
+               request.readyState === XMLHttpRequest.DONE &&
+               request.status === 200
+            ) {
+               var response = JSON.parse(request.response);
+               if (response.error_code === 0) {
+                  if (response.data.xml_request) {
+                     var xml_request = execute_qbxml_request(response.data.xml_request);
+                     $.when($("#loaderMsg").text("Adding " + (i + 1) + " of " + itemsToAdd.length + " items")).then(function () {
+                        postItemAddResponse(xml_request, job_id, itemsToAdd[i].id).then(
+                           function (postItemResponse) {
+                              var postResponse = JSON.parse(postItemResponse);
+                              if (postResponse.error_code !== 0) {
+                                 window.alert(postResponse.error_message);
+                                 error = true;
+                              }
+                              loop(i + 1, length);
                            }
-                           loop(i + 1, length);
-                        }
-                     );
-                  });                
-              } else {
-                window.alert("Failed !!");
-                error = true;
-                loop(i + 1, length);
-              }
-              
-            } else {
-              var message = response.error_message
-                ? response.error_message
-                : "Failed !!";
-              window.alert(message);
-              error = true;
-              loop(i + 1, length);
-            }
+                        );
+                     });
+                  } else {
+                     loop(i + 1, length);
+                  }
+               } else {
+                  var message = response.error_message
+                     ? response.error_message
+                     : "Failed !!";
+                  window.alert(message);
+                  error = true;
+                  loop(i + 1, length);
+               }
           }
         };
         request.send();
