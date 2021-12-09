@@ -554,9 +554,9 @@
           job_id +
           "&cat_nbr=" +
           encodeURIComponent(itemsToAdd[i].id) +
-          "&_income_account_id=" +
+          "&income_account_id=" +
           income_account_id +
-          "&_expense_account_id=" +
+          "&expense_account_id=" +
           expense_account_id;
         request.open("GET", url);
         request.onreadystatechange = function () {
@@ -584,7 +584,7 @@
                      loop(i + 1, length);
                   }
                } else if (response.error_code === 7) {
-                  getAccountDialog(itemsToAdd[i]).then(function (data) {
+                  getAccountDialog(response.error_message).then(function (data) {
                      if (data.error_code === 0) {
                         loop(i, length, data.income_account_id, data.expense_account_id);
                      } else {
@@ -635,10 +635,8 @@
 
 
 function getAccountDialog() {
-   console.log('getAccountDialog');
    var deferred = jQuery.Deferred();
-   var item = arguments[0];
-   var header = "Assign am account for <b>" + item['title'] + "</b>";
+   var header = arguments[0];
    var content = '';
    ['income_account', 'expense_account'].forEach(function (item) {
       content += "<div class='selectAccount'><p>" + initCap(item) + "<p><select name='" + item + "'>";
