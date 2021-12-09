@@ -571,6 +571,8 @@
                      $.when($("#loaderMsg").text("Adding " + (i + 1) + " of " + itemsToAdd.length + " items")).then(function () {
                         postItemAddResponse(xml_request, job_id, itemsToAdd[i].id).then(
                            function (postItemResponse) {
+                              income_account_id = '';
+                              expense_account_id = '';
                               var postResponse = JSON.parse(postItemResponse);
                               if (postResponse.error_code !== 0) {
                                  window.alert(postResponse.error_message);
