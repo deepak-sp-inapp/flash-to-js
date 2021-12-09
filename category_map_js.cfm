@@ -12,6 +12,7 @@
     $("#qb-accounts").css("display", "none");
 
     $("#tree, #qb-items, #qb-accounts").on("mousedown", function (e) {
+      clearSelection();
       var x = e.screenX;
       var y = e.screenY;
       $("#tree, #qb-items, #qb-accounts").on("mousemove", function (e) {
@@ -105,36 +106,35 @@
     $("#unmap-items").click(function (e) {
       var mappedItems = selectedMappedItems();
       if (mappedItems.length > 0) {
-        var header = "Remove mapping(s) for ?";
-        var content = "<table><tbody>";
-        $("#tree tr").each(function (index, value) {
-          if (
-            $(value).attr("class") === "active" &&
-            $(value).children("td").attr("data-id")
-          ) {
-            content +=
-              "<tr>" + $(value).children("td").get(0).outerHTML + "</tr>";
-          }
-        });
-        content += "</tbody></table>";
-        content +=
-          '<div class="okBtn"><button class="modal-toggle" id="deleteMappedItems">Ok</button></div>';
-        $(".modal-heading").html(header);
-        $(".modal-content").html(content);
-        $(".modal")
-          .toggleClass("is-visible")
-          .on("click", "#deleteMappedItems", function (e) {
-            e.stopPropagation();
-            $.when($("#loader").css("display", "block")).then(function () {
-              unMapItems();
+         var header = "Remove mapping(s) for ?";
+         var content = "<table><tbody>";
+         $("#tree tr").each(function (index, value) {
+            if (
+               $(value).attr("class") === "active" &&
+               $(value).children("td").attr("data-id")
+            ) {
+               content +=
+                  "<tr>" + $(value).children("td").get(0).outerHTML + "</tr>";
+            }
+         });
+         content += "</tbody></table>";
+         content +=
+            '<div class="okBtn"><button id="abortAction">Cancel</button> <button id="deleteMappedItems">Ok</button></div>';
+         $(".modal-heading").html(header);
+         $(".modal-content").html(content);
+         $(".modal")
+            .toggleClass("is-visible")
+            .on("click", "#deleteMappedItems", function () {
+               $.when($("#loader").css("display", "block")).then(function () {
+                  unMapItems();
+               });
+            })
+            .on("click", "#abortAction", function () {
+               $(".modal").removeClass("is-visible");
             });
-          });
       }
-    });
+   });
 
-    $(".modal-toggle").click(function (e) {
-      $(".modal").toggleClass("is-visible");
-    });
 
     $("input[name='items']").on("change", function () {
       var qbType = $(this).val();
@@ -213,7 +213,7 @@
 
   function initCap() {
     if (arguments[0]) {
-      var string = arguments[0].toLowerCase();
+      var string = arguments[0].toLowerCase().replace('_', ' ');
       return string.charAt(0).toUpperCase() + string.substring(1);
     }
   }
@@ -310,6 +310,7 @@
       ) {
         selectedItemObjects.push({
           id: $(value).find("td:first").data("id"),
+            title: $(value).find("td:first").data("title"),
         });
       }
     });
@@ -539,7 +540,7 @@
     var itemsToAdd = selectedCategoryItemObjects();
     var request = new XMLHttpRequest();
     var error = false;
-    (function loop(i, length) {
+    (function loop(i, length, income_account_id = '', expense_account_id = '') {
       if (i >= length || error) {
         clearSelection();
         getItems();
@@ -552,7 +553,11 @@
           "https://<cfoutput>#http_server#</cfoutput>/app/sync/category_map_rpc.cfm?req=getItemAddReq&job_id=" +
           job_id +
           "&cat_nbr=" +
-          encodeURIComponent(itemsToAdd[i].id);
+          encodeURIComponent(itemsToAdd[i].id) +
+          "&_income_account_id=" +
+          income_account_id +
+          "&_expense_account_id=" +
+          expense_account_id;
         request.open("GET", url);
         request.onreadystatechange = function () {
           if (
@@ -578,7 +583,18 @@
                   } else {
                      loop(i + 1, length);
                   }
-               } else {
+               } else if (response.error_code === 7) {
+                  getAccountDialog(itemsToAdd[i]).then(function (data) {
+                     if (data.error_code === 0) {
+                        loop(i, length, data.income_account_id, data.expense_account_id);
+                     } else {
+                        window.alert(data.error_message);
+                        error = true;
+                        loop(i + 1, length);
+                     }
+                  });
+               }
+               else {
                   var message = response.error_message
                      ? response.error_message
                      : "Failed !!";
@@ -616,4 +632,54 @@
     requests.send(params);
     return deferred.promise();
   }
+
+
+function getAccountDialog() {
+   console.log('getAccountDialog');
+   var deferred = jQuery.Deferred();
+   var item = arguments[0];
+   var header = "Assign am account for <b>" + item['title'] + "</b>";
+   var content = '';
+   ['income_account', 'expense_account'].forEach(function (item) {
+      content += "<div class='selectAccount'><p>" + initCap(item) + "<p><select name='" + item + "'>";
+      content += "<option value=''>Select</option>";
+      quickBookAccounts.forEach(function (data) {
+         if ((!data.account_desc && !data.account_id) || parseInt(data.ext_status) === 0) return;
+         content +=
+            "<option value='" + data.account_id + "'>" + data.account_desc + "</option>";
+      });
+      content += "</select></div>";
+   });
+
+   content +=
+      '<div class="okBtn"><button id="abortAction">Cancel</button> <button id="confirmAssignAccount">Ok</button></div>';
+   $(".modal-heading").html(header);
+   $(".modal-content").html(content);
+   $(".modal")
+      .addClass("is-visible")
+      .on("click", "#confirmAssignAccount", function (e) {
+         var income_account_id = $("select[name='income_account']").val();
+         var expense_account_id = $("select[name='expense_account']").val();
+         if (!income_account_id && !expense_account_id) {
+            window.alert('Please select atleat one !!');
+         } else {
+            $.when($(".modal").removeClass("is-visible")).then(function () {
+               deferred.resolve(
+                  {
+                     error_code: 0,
+                     error_message: "Assigned account !!",
+                     income_account_id: income_account_id,
+                     expense_account_id: expense_account_id
+                  }
+               );
+            });
+         }
+      })
+      .on("click", "#abortAction", function () {
+         $.when($(".modal").removeClass("is-visible")).then(function () {
+            deferred.resolve({ error_code: 1, error_message: "Aborted !!" });
+         });
+      });
+   return deferred.promise();
+}
 </script>

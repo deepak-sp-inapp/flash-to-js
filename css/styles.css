@@ -4,7 +4,7 @@
   height: inherit;
   background-color: #eceaea;
   background-size: cover;
-  z-index: 10000000;
+  z-index: 99;
   opacity: 0.8;
   display: none;
 }
@@ -75,7 +75,7 @@
 }
 
 .modal-header,
-.modal-content > table{
+.modal-content > table {
   padding: 1em;
 }
 
@@ -97,20 +97,6 @@
   border-bottom: 1px solid #e8e8e8;
 }
 
-.modal-close {
-  position: absolute;
-  top: 0;
-  right: 0;
-  padding: 1em;
-  color: #aaa;
-  background: none;
-  border: 0;
-}
-
-.modal-close:hover {
-  color: #777;
-}
-
 .modal-heading {
   font-size: 1.125em;
   margin: 0;
@@ -122,9 +108,15 @@
   margin-top: 0;
 }
 
-.modal-content > .modal-toggle {
-  margin-bottom: 10px;
-  float: right;
+.selectAccount {
+  width: 100%;
+  margin-top: 5% !important;
+  margin-left: 3% !important;
+}
+
+.selectAccount > p {
+  margin: 5px;
+  font-weight: bold;
 }
 
 .map-container {
