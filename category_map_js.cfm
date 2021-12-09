@@ -540,7 +540,9 @@
     var itemsToAdd = selectedCategoryItemObjects();
     var request = new XMLHttpRequest();
     var error = false;
-    (function loop(i, length, income_account_id = '', expense_account_id = '') {
+    (function loop(i, length) {
+      var income_account_id = arguments[2] ? arguments[2] : '';
+      var expense_account_id = arguments[3] ? arguments[3] : '';
       if (i >= length || error) {
         clearSelection();
         getItems();
