@@ -11,31 +11,32 @@
     $("#qb-items").css("display", "none");
     $("#qb-accounts").css("display", "none");
 
-    $("#tree, #qb-items, #qb-accounts").on("mousedown", function (e) {
-      clearSelection();
-      var x = e.screenX;
-      var y = e.screenY;
-      $("#tree, #qb-items, #qb-accounts").on("mousemove", function (e) {
-        if (Math.abs(x - e.screenX) > 5 || Math.abs(y - e.screenY) > 5) {
-          dragging = true;
-          e.target.parentElement.classList.add("active");
-        }
-        showActionButtons();
-      });
-    });
-
-    $("#tree, #qb-items, #qb-accounts").on("mouseup", function (e) {
-      $("#tree, #qb-items, #qb-accounts").off("mousemove");
-      if (dragging) {
-        e.target.parentElement.classList.add("active");
-      }
-      dragging = false;
-      showActionButtons();
-    });
-
-   ["#tree tr", "#qb-items tr, #qb-accounts tr"].forEach(function (
+     ["#tree tr", "#qb-items tr, #qb-accounts tr"].forEach(function (
       currentElement
    ) {
+
+      $("table").on("mousedown", currentElement, function (e) {
+         $(currentElement).removeClass("active");
+         var x = e.screenX;
+         var y = e.screenY;
+         $("table").on("mousemove", currentElement, function (e) {
+            if (Math.abs(x - e.screenX) > 5 || Math.abs(y - e.screenY) > 5) {
+               dragging = true;
+               e.target.parentElement.classList.add("active");
+            }
+            showActionButtons();
+         });
+      });
+
+      $("table").on("mouseup", currentElement, function (e) {
+         $("table").off("mousemove", currentElement,);
+         if (dragging) {
+            e.target.parentElement.classList.add("active");
+         }
+         dragging = false;
+         showActionButtons();
+      });
+
       $("table").on("click", currentElement, function (e) {
          var $element = $(currentElement);
          if (!lastChecked) {
@@ -119,7 +120,7 @@
          });
          content += "</tbody></table>";
          content +=
-            '<div class="okBtn"><button id="abortAction">Cancel</button> <button id="deleteMappedItems">Ok</button></div>';
+            '<div class="okBtn"><button id="abortAction">Cancel</button> <button id="deleteMappedItems">OK</button></div>';
          $(".modal-heading").html(header);
          $(".modal-content").html(content);
          $(".modal")
@@ -257,8 +258,12 @@
             };
           })[0];
       }
+      var indent = 0;
+      if (mappedItem && mappedItem.level) {
+         indent = parseInt(mappedItem.level) - 1 === 0 ? 5 : (parseInt(mappedItem.level) - 1) * 15;
+      }
       liParent +=
-        '<tr><td width="45%" style="padding-left: ' +
+        '<tr><td width="47%" style="padding-left: ' +
         data.cat_level * 15 +
         'px" data-level="' +
         data.cat_level +
@@ -268,11 +273,11 @@
         data.cat_desc +
         '">  <span>' +
         data.cat_desc +
-        '</span></td><td width="10%" class="center">' +
+        '</span></td><td width="6%" class="center">' +
         (mappedItem ? initCap(mappedItem.type) : "") +
         '</td><td style="padding-left: ' +
-        (mappedItem && mappedItem.level ? (parseInt(mappedItem.level)-1) * 15 : 0) +
-        'px" width="45%" data-qb-id="' +
+        (mappedItem && mappedItem.level ? indent : 0) +
+         'px" width="47%" data-qb-id="' +
         (mappedItem && mappedItem.id ? mappedItem.id : "") +
         '" data-id="' +
         data.cat_nbr +
@@ -550,7 +555,7 @@
         $("#loaderMsg").text("");
         return;
       }
-      $.when($("#loaderMsg").text("Requesting " + (i + 1) + " of " + itemsToAdd.length + " items")).then(function () {
+      $.when($("#loaderMsg").text("Adding " + (i + 1) + " of " + itemsToAdd.length + " items")).then(function () {
         var url =
           "https://<cfoutput>#http_server#</cfoutput>/app/sync/category_map_rpc.cfm?req=getItemAddReq&job_id=" +
           job_id +
@@ -592,7 +597,6 @@
                      if (data.error_code === 0) {
                         loop(i, length, data.income_account_id, data.expense_account_id);
                      } else {
-                        window.alert(data.error_message);
                         error = true;
                         loop(i + 1, length);
                      }
@@ -601,7 +605,7 @@
                else {
                   var message = response.error_message
                      ? response.error_message
-                     : "Failed !!";
+                     : "Failed";
                   window.alert(message);
                   error = true;
                   loop(i + 1, length);
@@ -631,7 +635,7 @@
       deferred.resolve(requests.response);
     };
     requests.onerror = function () {
-      deferred.resolve({ error_code: 1, error_message: "Failed !!" });
+      deferred.resolve({ error_code: 1, error_message: "Failed" });
     };
     requests.send(params);
     return deferred.promise();
@@ -641,20 +645,24 @@
 function getAccountDialog() {
    var deferred = jQuery.Deferred();
    var header = arguments[0];
+   var incomeAccounts = ['INCOME', 'OTHERINC'];
+   var expenseAccounts = ['COSTOFGO', 'EXPENSE', 'OTHEREXP'];
    var content = '';
    ['income_account', 'expense_account'].forEach(function (item) {
-      content += "<div class='selectAccount'><p>" + initCap(item) + "<p><select name='" + item + "'>";
-      content += "<option value=''>Select</option>";
+      content += "<div class='selectAccount'><p>" + initCap(item) + "</p><select name='" + item + "'>";
+      content += "<option value=''>(None)</option>";
       quickBookAccounts.forEach(function (data) {
          if ((!data.account_desc && !data.account_id) || parseInt(data.ext_status) === 0) return;
-         content +=
-            "<option value='" + data.account_id + "'>" + data.account_desc + "</option>";
+         if ((item == 'income_account' && incomeAccounts.indexOf(data.account_type) !== -1) || (item == 'expense_account' && expenseAccounts.indexOf(data.account_type) !== -1)) {
+            content +=
+               "<option value='" + data.account_id + "'>" + data.account_desc + "</option>";
+         }
       });
       content += "</select></div>";
    });
 
    content +=
-      '<div class="okBtn"><button id="abortAction">Cancel</button> <button id="confirmAssignAccount">Ok</button></div>';
+      '<div class="okBtn"><button id="abortAction">Cancel</button> <button id="confirmAssignAccount">OK</button></div>';
    $(".modal-heading").html(header);
    $(".modal-content").html(content);
    $(".modal")
@@ -663,13 +671,13 @@ function getAccountDialog() {
          var income_account_id = $("select[name='income_account']").val();
          var expense_account_id = $("select[name='expense_account']").val();
          if (!income_account_id && !expense_account_id) {
-            window.alert('Please select atleat one !!');
+            window.alert('Please select at least one account to continue');
          } else {
             $.when($(".modal").removeClass("is-visible")).then(function () {
                deferred.resolve(
                   {
                      error_code: 0,
-                     error_message: "Assigned account !!",
+                     error_message: "Assigned account",
                      income_account_id: income_account_id,
                      expense_account_id: expense_account_id
                   }
@@ -679,7 +687,7 @@ function getAccountDialog() {
       })
       .on("click", "#abortAction", function () {
          $.when($(".modal").removeClass("is-visible")).then(function () {
-            deferred.resolve({ error_code: 1, error_message: "Aborted !!" });
+            deferred.resolve({ error_code: 1, error_message: "" });
          });
       });
    return deferred.promise();

@@ -90,6 +90,10 @@
   padding: 1em;
 }
 
+.okBtn > button {
+  width: 55px;
+}
+
 .modal-header {
   position: relative;
   background-color: #fff;
@@ -117,6 +121,10 @@
 .selectAccount > p {
   margin: 5px;
   font-weight: bold;
+}
+
+.selectAccount > select {
+  width: 60%;
 }
 
 .map-container {
@@ -211,6 +219,12 @@ td > span:hover,
 
 .action-buttons > span:hover {
   transform: scale(1.03);
+}
+
+.qbRadio {
+  display: flex;
+  align-items: end;
+  justify-content: center;
 }
 
 #add-items,
