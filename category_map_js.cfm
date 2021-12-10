@@ -29,7 +29,7 @@
       });
 
       $("table").on("mouseup", currentElement, function (e) {
-         $("table").off("mousemove", currentElement,);
+         $("table").off("mousemove", currentElement);
          if (dragging) {
             e.target.parentElement.classList.add("active");
          }
@@ -212,12 +212,16 @@
     });
   }
 
-  function initCap() {
-    if (arguments[0]) {
+function initCap() {
+   if (arguments[0]) {
       var string = arguments[0].toLowerCase().replace('_', ' ');
-      return string.charAt(0).toUpperCase() + string.substring(1);
-    }
-  }
+      var arr = string.split(" ");
+      for (var i = 0; i < arr.length; i++) {
+         arr[i] = arr[i].charAt(0).toUpperCase() + arr[i].slice(1);
+      }
+      return arr.join(" ");
+   }
+}
 
    function clearSelection() {
       $('tr').removeClass("active");
@@ -593,13 +597,17 @@
                      loop(i + 1, length);
                   }
                } else if (response.error_code === 7) {
-                  getAccountDialog(response.error_message).then(function (data) {
-                     if (data.error_code === 0) {
-                        loop(i, length, data.income_account_id, data.expense_account_id);
-                     } else {
-                        error = true;
-                        loop(i + 1, length);
-                     }
+                  $.when($("#loader").css("display", "none")).then(function () {
+                     getAccountDialog(response.error_message).then(function (data) {
+                        if (data.error_code === 0) {
+                           $.when($("#loader").css("display", "block")).then(function () {
+                              loop(i, length, data.income_account_id, data.expense_account_id);
+                           });
+                        } else {
+                           error = true;
+                           loop(i + 1, length);
+                        }
+                     });
                   });
                }
                else {
@@ -671,6 +679,7 @@ function getAccountDialog() {
          var income_account_id = $("select[name='income_account']").val();
          var expense_account_id = $("select[name='expense_account']").val();
          if (!income_account_id && !expense_account_id) {
+            e.stopImmediatePropagation();
             window.alert('Please select at least one account to continue');
          } else {
             $.when($(".modal").removeClass("is-visible")).then(function () {

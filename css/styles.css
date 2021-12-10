@@ -146,6 +146,10 @@
   height: 500px;
 }
 
+.quick-book th {
+  padding: 0px;
+}
+
 .action-buttons {
   display: flex;
   flex-direction: column;
