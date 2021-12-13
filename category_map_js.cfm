@@ -560,16 +560,15 @@ function initCap() {
         return;
       }
       $.when($("#loaderMsg").text("Adding " + (i + 1) + " of " + itemsToAdd.length + " items")).then(function () {
+         var params = new FormData();
+         params.append("req", "getItemAddReq");
+         params.append("job_id", job_id);
+         params.append("income_account_id", income_account_id);
+         params.append("expense_account_id", expense_account_id);
+         params.append("cat_nbr", encodeURIComponent(itemsToAdd[i].id));
         var url =
-          "https://<cfoutput>#http_server#</cfoutput>/app/sync/category_map_rpc.cfm?req=getItemAddReq&job_id=" +
-          job_id +
-          "&cat_nbr=" +
-          encodeURIComponent(itemsToAdd[i].id) +
-          "&income_account_id=" +
-          income_account_id +
-          "&expense_account_id=" +
-          expense_account_id;
-        request.open("GET", url);
+          "https://<cfoutput>#http_server#</cfoutput>/app/sync/category_map_rpc.cfm";
+        request.open("POST", url);
         request.onreadystatechange = function () {
           if (
                request.readyState === XMLHttpRequest.DONE &&
@@ -620,7 +619,7 @@ function initCap() {
                }
           }
         };
-        request.send();
+        request.send(params);
       });
     })(0, itemsToAdd.length);
   }
