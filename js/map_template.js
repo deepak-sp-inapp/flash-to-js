@@ -542,12 +542,13 @@ function getItemAddRequest() {
          return;
       }
       $.when($("#loaderMsg").text("Requesting " + (i + 1) + " of " + itemsToAdd.length + " items")).then(function () {
+         var params = new FormData();
+         params.append("req", "getItemAddReq");
+         params.append("job_id", job_id);
+         params.append("cat_nbr", encodeURIComponent(itemsToAdd[i].id));
          var url =
-            "https://<cfoutput>#http_server#</cfoutput>/app/sync/category_map_rpc.cfm?req=getItemAddReq&job_id=" +
-            job_id +
-            "&cat_nbr=" +
-            encodeURIComponent(itemsToAdd[i].id);
-         request.open("GET", url);
+            "https://<cfoutput>#http_server#</cfoutput>/app/sync/category_map_rpc.cfm";
+         request.open("POST", url);
          request.onreadystatechange = function () {
             if (
                request.readyState === XMLHttpRequest.DONE &&
@@ -574,7 +575,6 @@ function getItemAddRequest() {
                      error = true;
                      loop(i + 1, length);
                   }
-
                } else {
                   var message = response.error_message
                      ? response.error_message
@@ -585,7 +585,7 @@ function getItemAddRequest() {
                }
             }
          };
-         request.send();
+         request.send(params);
       });
    })(0, itemsToAdd.length);
 }
