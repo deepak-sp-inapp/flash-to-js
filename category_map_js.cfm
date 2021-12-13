@@ -332,7 +332,7 @@ function initCap() {
     var element = document.getElementById("qb-items");
     var liParent = "";
     jsonData.forEach(function (data) {
-      if ((!data.item_name && !data.item_id)||parseInt(data.ext_status)===0) return;
+      if ((!data.item_name && !data.item_id) || parseInt(data.ext_status) === 0 || parseInt(data.active_flag) !== 1) return;
       liParent +=
         '<tr><td width="45%" style="padding-left: ' +
         (data.item_level - 1) * 15 +
@@ -366,7 +366,7 @@ function initCap() {
     var element = document.getElementById("qb-accounts");
     var liParent = "";
     jsonData.forEach(function (data) {
-      if ((!data.account_desc && !data.account_id) || parseInt(data.ext_status)===0) return;
+      if ((!data.account_desc && !data.account_id) || parseInt(data.ext_status) === 0 || parseInt(data.active_flag) !== 1) return;
       liParent +=
         '<tr><td width="45%" style="padding-left: ' +
         (data.item_level - 1) * 15 +
@@ -408,7 +408,7 @@ function initCap() {
   }
 
   function showActionButtons() {
-    if ($("#items tr").hasClass("active") && !$("#accounts tr").hasClass("active")) {
+    if ($("#items tr").hasClass("active")) {
       $("#add-items").css("visibility", "visible");
     } else {
       $("#add-items").css("visibility", "hidden");
