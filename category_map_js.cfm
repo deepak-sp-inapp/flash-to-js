@@ -241,7 +241,6 @@ function initCap() {
       var titleLevels = [];
       jsonData.forEach(function (data) {
          if (!data.cat_desc && !data.cat_nbr) return;
-         titleLevels[parseInt(data.cat_level)] = data.cat_desc;
          if (data.item_id) {
             var mappedItem = quickBookItems
                .filter(function (item) {
@@ -253,6 +252,7 @@ function initCap() {
                      name: item.item_name,
                      type: "item",
                      level: item.item_level,
+                     title: $('[data-id=' + item.item_id + ']').attr('data-titleLevel')
                   };
                })[0];
          }
@@ -267,6 +267,7 @@ function initCap() {
                      name: item.account_desc,
                      type: "acct",
                      level: item.account_level,
+                     title: $('[data-id=' + item.account_id + ']').attr('data-titleLevel')
                   };
                })[0];
          }
@@ -287,7 +288,7 @@ function initCap() {
             data.cat_desc +
             '</span></td><td width="6%" class="center">' +
             (mappedItem ? initCap(mappedItem.type) : "") +
-            '</td><td title="' + titleLevels.slice(0, (parseInt(data.cat_level) + 1)).join(':') + '" style="padding-left: ' +
+            '</td><td title="' + (mappedItem && mappedItem.title ? mappedItem.title : "") + '" style="padding-left: ' +
             (mappedItem && mappedItem.level ? indent : 0) +
             'px" width="47%" data-qb-id="' +
             (mappedItem && mappedItem.id ? mappedItem.id : "") +
@@ -339,14 +340,16 @@ function initCap() {
     var jsonData = arguments[0];
     var element = document.getElementById("qb-items");
     var liParent = "";
+    var titleLevels = [];
     jsonData.forEach(function (data) {
+       titleLevels[parseInt(data.item_level - 1)] = data.item_name;
       if ((!data.item_name && !data.item_id) || parseInt(data.ext_status) === 0 || parseInt(data.active_flag) !== 1) return;
       liParent +=
         '<tr><td width="45%" style="padding-left: ' +
         (data.item_level - 1) * 15 +
         'px" data-id="' +
         data.item_id +
-        '" data-title="' +
+        '" data-titleLevel="' + titleLevels.slice(0, parseInt(data.item_level)).join(':') + '" data-title="' +        
         data.item_name +
         '">  <span>' +
         data.item_name +
@@ -373,14 +376,16 @@ function initCap() {
     var jsonData = arguments[0];
     var element = document.getElementById("qb-accounts");
     var liParent = "";
+    var titleLevels = [];
     jsonData.forEach(function (data) {
+       titleLevels[parseInt(data.account_level - 1)] = data.account_desc;
       if ((!data.account_desc && !data.account_id) || parseInt(data.ext_status) === 0 || parseInt(data.active_flag) !== 1) return;
       liParent +=
         '<tr><td width="45%" style="padding-left: ' +
-        (data.item_level - 1) * 15 +
+        (data.account_level - 1) * 15 +
         'px" data-id="' +
         data.account_id +
-        '" data-title="' +
+        '" data-titleLevel="' + titleLevels.slice(0, parseInt(data.account_level)).join(':') + '" data-title="' +
         data.account_desc +
         '">  <span>' +
         data.account_desc +
