@@ -11,12 +11,11 @@
     $("#qb-items").css("display", "none");
     $("#qb-accounts").css("display", "none");
 
-     ["#tree tr", "#qb-items tr, #qb-accounts tr"].forEach(function (
+    ["#tree tr", "#qb-items tr, #qb-accounts tr"].forEach(function (
       currentElement
    ) {
 
       $("table").on("mousedown", currentElement, function (e) {
-         $(currentElement).removeClass("active");
          var x = e.screenX;
          var y = e.screenY;
          $("table").on("mousemove", currentElement, function (e) {
@@ -49,8 +48,9 @@
                .slice(Math.min(start, end), Math.max(start, end) + 1)
                .removeClass("active")
                .addClass("active");
-         }
-         else {
+         } else if (e.ctrlKey) {
+            $(this).toggleClass("active");
+         } else {
             $element.removeClass("active");
             $(this).toggleClass("active");
          }
@@ -107,25 +107,32 @@
     $("#unmap-items").click(function (e) {
       var mappedItems = selectedMappedItems();
       if (mappedItems.length > 0) {
-         var header = "Remove mapping(s) for ?";
-         var content = "<table><tbody>";
-         $("#tree tr").each(function (index, value) {
-            if (
-               $(value).attr("class") === "active" &&
-               $(value).children("td").attr("data-id")
-            ) {
-               content +=
-                  "<tr>" + $(value).children("td").get(0).outerHTML + "</tr>";
-            }
-         });
-         content += "</tbody></table>";
+         var header = "Remove mapping(s) for ";
+         var content = "";
+         if (mappedItems.length > 10) {
+            header += " these " + mappedItems.length + " items ?";
+         } else {
+            header += "?";
+            content += "<table><tbody>";
+            $("#tree tr").each(function (index, value) {
+               if (
+                  $(value).attr("class") === "active" &&
+                  $(value).children("td").attr("data-id")
+               ) {
+                  content +=
+                     "<tr>" + $(value).children("td").get(0).outerHTML + "</tr>";
+               }
+            });
+            content += "</tbody></table>";
+         }
          content +=
             '<div class="okBtn"><button id="abortAction">Cancel</button> <button id="deleteMappedItems">OK</button></div>';
          $(".modal-heading").html(header);
          $(".modal-content").html(content);
          $(".modal")
             .toggleClass("is-visible")
-            .on("click", "#deleteMappedItems", function () {
+            .on("click", "#deleteMappedItems", function (e) {
+               e.stopImmediatePropagation();
                $.when($("#loader").css("display", "block")).then(function () {
                   unMapItems();
                });
@@ -134,8 +141,7 @@
                $(".modal").removeClass("is-visible");
             });
       }
-   });
-
+    });
 
     $("input[name='items']").on("change", function () {
       var qbType = $(this).val();
@@ -227,75 +233,77 @@ function initCap() {
       $('tr').removeClass("active");
    }
 
-  function startBuildCategory() {
-    if (!arguments[0]) return;
-    var jsonData = arguments[0];
-    var element = document.getElementById("tree");
-    var liParent = "";
-    jsonData.forEach(function (data) {
-      if (!data.cat_desc && !data.cat_nbr) return;
-      if (data.item_id) {
-        var mappedItem = quickBookItems
-          .filter(function (item) {
-            return (item.item_id == data.item_id && item.ext_status !== 0);
-          })
-          .map(function (item) {
-            return { 
-               id: item.item_id, 
-               name: item.item_name, 
-               type: "item",
-               level: item.item_level,
-            };
-          })[0];
-      }
-      if (data.account_id) {
-        var mappedItem = quickBookAccounts
-          .filter(function (item) {
-            return (item.account_id == data.account_id && item.ext_status !== 0);
-          })
-          .map(function (item) {
-            return {
-              id: item.account_id,
-              name: item.account_desc,
-              type: "acct",
-              level: item.account_level,
-            };
-          })[0];
-      }
-      var indent = 0;
-      if (mappedItem && mappedItem.level) {
-         indent = parseInt(mappedItem.level) - 1 === 0 ? 5 : (parseInt(mappedItem.level) - 1) * 15;
-      }
-      liParent +=
-        '<tr><td width="47%" style="padding-left: ' +
-        data.cat_level * 15 +
-        'px" data-level="' +
-        data.cat_level +
-        '" data-id="' +
-        data.cat_nbr +
-        '" data-title="' +
-        data.cat_desc +
-        '">  <span>' +
-        data.cat_desc +
-        '</span></td><td width="6%" class="center">' +
-        (mappedItem ? initCap(mappedItem.type) : "") +
-        '</td><td style="padding-left: ' +
-        (mappedItem && mappedItem.level ? indent : 0) +
-         'px" width="47%" data-qb-id="' +
-        (mappedItem && mappedItem.id ? mappedItem.id : "") +
-        '" data-id="' +
-        data.cat_nbr +
-        '" id="' +
-        data.cat_nbr +
-        '">' +
-        (mappedItem && mappedItem.name ? mappedItem.name : "") +
-        "</td></tr>";
-    });
-    element.innerHTML = liParent;
-    showActionButtons();
-    itemScrollPosition();
-    accountScrollPosition();
-  }
+   function startBuildCategory() {
+      if (!arguments[0]) return;
+      var jsonData = arguments[0];
+      var element = document.getElementById("tree");
+      var liParent = "";
+      var titleLevels = [];
+      jsonData.forEach(function (data) {
+         if (!data.cat_desc && !data.cat_nbr) return;
+         titleLevels[parseInt(data.cat_level)] = data.cat_desc;
+         if (data.item_id) {
+            var mappedItem = quickBookItems
+               .filter(function (item) {
+                  return (item.item_id == data.item_id && item.ext_status !== 0);
+               })
+               .map(function (item) {
+                  return {
+                     id: item.item_id,
+                     name: item.item_name,
+                     type: "item",
+                     level: item.item_level,
+                  };
+               })[0];
+         }
+         if (data.account_id) {
+            var mappedItem = quickBookAccounts
+               .filter(function (item) {
+                  return (item.account_id == data.account_id && item.ext_status !== 0);
+               })
+               .map(function (item) {
+                  return {
+                     id: item.account_id,
+                     name: item.account_desc,
+                     type: "acct",
+                     level: item.account_level,
+                  };
+               })[0];
+         }
+         var indent = 0;
+         if (mappedItem && mappedItem.level) {
+            indent = parseInt(mappedItem.level) - 1 === 0 ? 5 : (parseInt(mappedItem.level) - 1) * 15;
+         }
+         liParent +=
+            '<tr><td width="47%" style="padding-left: ' +
+            data.cat_level * 15 +
+            'px" data-level="' +
+            data.cat_level +
+            '" data-id="' +
+            data.cat_nbr +
+            '" data-title="' +
+            data.cat_desc +
+            '">  <span>' +
+            data.cat_desc +
+            '</span></td><td width="6%" class="center">' +
+            (mappedItem ? initCap(mappedItem.type) : "") +
+            '</td><td title="' + titleLevels.slice(0, (parseInt(data.cat_level) + 1)).join(':') + '" style="padding-left: ' +
+            (mappedItem && mappedItem.level ? indent : 0) +
+            'px" width="47%" data-qb-id="' +
+            (mappedItem && mappedItem.id ? mappedItem.id : "") +
+            '" data-id="' +
+            data.cat_nbr +
+            '" id="' +
+            data.cat_nbr +
+            '">' +
+            (mappedItem && mappedItem.name ? mappedItem.name : "") +
+            "</td></tr>";
+      });
+      element.innerHTML = liParent;
+      showActionButtons();
+      itemScrollPosition();
+      accountScrollPosition();
+   }
 
   function selectedCategoryItems() {
     var selectedItems = [];
@@ -565,7 +573,7 @@ function initCap() {
          params.append("job_id", job_id);
          params.append("income_account_id", income_account_id);
          params.append("expense_account_id", expense_account_id);
-         params.append("cat_nbr", encodeURIComponent(itemsToAdd[i].id));
+         params.append("cat_nbr", itemsToAdd[i].id);
         var url =
           "https://<cfoutput>#http_server#</cfoutput>/app/sync/category_map_rpc.cfm";
         request.open("POST", url);
