@@ -353,7 +353,7 @@ function initCap() {
         (data.item_level - 1) * 15 +
         'px" data-id="' +
         data.item_id +
-        '" data-titleLevel="' + titleLevels.slice(0, parseInt(data.item_level)).join(':') + '" data-title="' +        
+        '" data-titleLevel="' + titleLevels.slice(0, parseInt(data.item_level)).join(' : ') + '" data-title="' +        
         data.item_name +
         '">  <span>' +
         data.item_name +
@@ -389,7 +389,7 @@ function initCap() {
         (data.account_level - 1) * 15 +
         'px" data-id="' +
         data.account_id +
-        '" data-titleLevel="' + titleLevels.slice(0, parseInt(data.account_level)).join(':') + '" data-title="' +
+        '" data-titleLevel="' + titleLevels.slice(0, parseInt(data.account_level)).join(' : ') + '" data-title="' +
         data.account_desc +
         '">  <span>' +
         data.account_desc +
