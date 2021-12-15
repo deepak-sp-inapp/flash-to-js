@@ -487,7 +487,7 @@ function initCap() {
     xhr.open(
       "GET",
       "https://<cfoutput>#http_server#</cfoutput>/app/sync/category_map_rpc.cfm?req=getAccounts",
-      true
+      false
     );
     xhr.onerror = function (e) {
       console.log(e);
@@ -518,7 +518,7 @@ function initCap() {
     xhr.open(
       "GET",
       "https://<cfoutput>#http_server#</cfoutput>/app/sync/category_map_rpc.cfm?req=getCategories&job_id="+job_id,
-      true
+      false
     );
     xhr.onerror = function (e) {
       $("#loader").fadeOut(200);
@@ -549,7 +549,7 @@ function initCap() {
     xhr.open(
       "GET",
       "https://<cfoutput>#http_server#</cfoutput>/app/sync/category_map_rpc.cfm?req=getItems",
-      true
+      false
     );
     xhr.onerror = function (e) {
       console.log(e);
