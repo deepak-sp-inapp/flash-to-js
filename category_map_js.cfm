@@ -158,14 +158,18 @@
       });
     });
 
-    $.when(
-      $("#loader, #qb-items").css("display", "block"),
-      $("input[name='items'][value='items']").prop("checked", true)
-    ).then(function () {
-      getAccounts();
-      getItems();
-      getCategories();
-    });
+   if ($("#new_template_id").val()) {
+      $.when(
+         $("#loader, #qb-items").css("display", "block"),
+         $("input[name='items'][value='items']").prop("checked", true)
+      ).then(function () {
+         getAccounts();
+         getItems();
+         getCategories();
+      });
+   } else {
+      window.alert('Please select a template');
+   }
 
     $("#items").scroll(function () {
       currentItemScrollPosition = $("#items").scrollTop();
